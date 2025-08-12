@@ -17,9 +17,6 @@ public class User {
     @Column(nullable = false, length = 50)
     private String nickname;
 
-    @Column(unique = true, length = 100)
-    private String email;
-
     @Column(nullable = false, length = 20)
     private String provider;  // google, kakao, github
 

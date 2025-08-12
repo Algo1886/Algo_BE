@@ -1,0 +1,39 @@
+package com.teamalgo.algo.auth.service;
+
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
+import com.teamalgo.algo.auth.dto.TokenResponse;
+import com.teamalgo.algo.auth.security.GoogleTokenVerifier;
+import com.teamalgo.algo.auth.security.JwtTokenProvider;
+import com.teamalgo.algo.user.domain.User;
+import com.teamalgo.algo.user.service.UserService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+@Service
+@RequiredArgsConstructor
+public class GoogleOAuthService {
+
+    private final GoogleTokenVerifier googleTokenVerifier;
+    private final JwtTokenProvider jwtTokenProvider;
+    private final UserService userService;
+
+    @Transactional
+    public TokenResponse authenticateUser(String token) {
+        GoogleIdToken.Payload payload = googleTokenVerifier.verifyToken(token);
+
+        String providerId = payload.getSubject();
+        String name = (String) payload.get("name");
+
+        User user = userService.findByProviderAndProviderId("google", providerId)
+                .orElseGet(() -> userService.saveUser(User.builder()
+                        .nickname(name)
+                        .provider("google")
+                        .providerId(providerId)
+                        .build()));
+
+        String accessToken = jwtTokenProvider.generateAccessToken(String.valueOf(user.getId()));
+        String refreshToken = jwtTokenProvider.generateRefreshToken(String.valueOf(user.getId()));
+        return new TokenResponse(accessToken, refreshToken);
+    }
+}
