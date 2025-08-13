@@ -10,7 +10,8 @@ public enum ErrorCode implements BaseCode {
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "사용자를 찾을 수 없습니다."),
     INVALID_REQUEST(HttpStatus.BAD_REQUEST, "잘못된 요청입니다."),
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 오류가 발생했습니다."),
-    JWT_TOKEN_INVALID(HttpStatus.UNAUTHORIZED, "토큰이 유효하지 않거나 만료되었습니다.");
+    JWT_TOKEN_INVALID(HttpStatus.UNAUTHORIZED, "토큰이 유효하지 않거나 만료되었습니다."),
+    GITHUB_OAUTH_FAILED(HttpStatus.UNAUTHORIZED, "GitHub OAuth 인증에 실패했습니다.");
 
     private final HttpStatus status;
     private final String message;
