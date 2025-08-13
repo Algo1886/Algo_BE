@@ -2,6 +2,7 @@ package com.teamalgo.algo.auth.controller;
 
 import com.teamalgo.algo.auth.dto.LoginRequest;
 import com.teamalgo.algo.auth.dto.TokenResponse;
+import com.teamalgo.algo.auth.service.GithubOAuthService;
 import com.teamalgo.algo.auth.service.GoogleOAuthService;
 import com.teamalgo.algo.global.common.api.ApiResponse;
 import com.teamalgo.algo.global.common.code.SuccessCode;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final GoogleOAuthService googleService;
+    private final GithubOAuthService githubOAuthService;
 
     // 구글 로그인
     @PostMapping("/google-login")
@@ -33,8 +35,8 @@ public class AuthController {
     // 깃허브 로그인
     @PostMapping("/github-login")
     public ResponseEntity<ApiResponse<TokenResponse>> githubLogin(@RequestBody LoginRequest loginRequest) {
-
-        return ApiResponse.success(SuccessCode._OK, null);
+        TokenResponse response = githubOAuthService.authenticateUser(loginRequest.getToken());
+        return ApiResponse.success(SuccessCode._OK, response);
     }
 
 }
