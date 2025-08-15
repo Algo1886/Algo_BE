@@ -7,11 +7,13 @@ import com.teamalgo.algo.auth.security.JwtTokenProvider;
 import com.teamalgo.algo.user.domain.User;
 import com.teamalgo.algo.user.service.UserService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class KakaoOAuthService {
@@ -24,13 +26,10 @@ public class KakaoOAuthService {
     @Transactional
     public TokenResponse authenticateUser(String kakaoAccessToken) {
         try {
-            // 1) 전달 토큰 로그
-            System.out.println("💡 전달받은 카카오 Access Token: " + kakaoAccessToken);
-
-            // 2) 카카오 사용자 정보 요청
+            // 카카오 사용자 정보 요청
             HttpHeaders headers = new HttpHeaders();
             headers.set("Authorization", "Bearer " + kakaoAccessToken);
-            headers.set("Accept", "application/json"); // GET엔 Accept가 더 적절
+            headers.set("Accept", "application/json");
 
             ResponseEntity<String> response = restTemplate.exchange(
                     "https://kapi.kakao.com/v2/user/me",
@@ -40,9 +39,8 @@ public class KakaoOAuthService {
             );
 
             String raw = response.getBody();
-            System.out.println("📌 카카오 raw 응답: " + raw);
 
-            // 3) JSON 파싱 (NPE 방지)
+            // JSON 파싱
             JsonNode root = objectMapper.readTree(raw);
 
             if (!root.hasNonNull("id")) {
@@ -63,7 +61,7 @@ public class KakaoOAuthService {
 
             final String finalNickname = nickname;
 
-            // 4) DB 조회/저장
+            // DB 조회/저장
             User user = userService.findByProviderAndProviderId("kakao", providerId)
                     .orElseGet(() -> userService.saveUser(User.builder()
                             .nickname(finalNickname)
@@ -71,16 +69,14 @@ public class KakaoOAuthService {
                             .providerId(providerId)
                             .build()));
 
-            // 5) JWT 발급
+            // JWT 발급
             String accessToken = jwtTokenProvider.generateAccessToken(String.valueOf(user.getId()));
             String refreshToken = jwtTokenProvider.generateRefreshToken(String.valueOf(user.getId()));
 
-            // 6) 응답
             return new TokenResponse(accessToken, refreshToken);
 
         } catch (Exception e) {
-            // 원인 추적 쉽게 로그 남기기
-            e.printStackTrace();
+            log.error("카카오 로그인 처리 중 오류 발생", e);
             throw new RuntimeException("카카오 로그인 처리 중 오류: " + e.getMessage(), e);
         }
     }
