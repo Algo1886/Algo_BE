@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.teamalgo.algo.auth.dto.TokenResponse;
 import com.teamalgo.algo.auth.security.JwtTokenProvider;
+import com.teamalgo.algo.global.common.code.ErrorCode;
+import com.teamalgo.algo.global.exception.CustomException;
 import com.teamalgo.algo.user.domain.User;
 import com.teamalgo.algo.user.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -107,7 +109,7 @@ public class KakaoOAuthService {
 
         } catch (Exception e) {
             log.error("카카오 로그인 처리 중 오류 발생", e);
-            throw new RuntimeException("카카오 로그인 처리 중 오류: " + e.getMessage(), e);
+            throw new CustomException(ErrorCode.OAUTH_FAILED);
         }
     }
 }

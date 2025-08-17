@@ -56,7 +56,7 @@ public class GithubOAuthService {
             Map<String, Object> tokenMap = objectMapper.readValue(tokenResponse.getBody(), Map.class);
 
             if (!tokenMap.containsKey("access_token")) {
-                throw new CustomException(ErrorCode.GITHUB_OAUTH_FAILED);
+                throw new CustomException(ErrorCode.OAUTH_FAILED);
             }
 
             String accessTokenGithub = (String) tokenMap.get("access_token");
@@ -95,7 +95,7 @@ public class GithubOAuthService {
             return new TokenResponse(accessToken, refreshToken);
 
         } catch (Exception e) {
-            throw new CustomException(ErrorCode.GITHUB_OAUTH_FAILED);
+            throw new CustomException(ErrorCode.OAUTH_FAILED);
         }
     }
 }
