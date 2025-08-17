@@ -4,6 +4,7 @@ import com.teamalgo.algo.auth.dto.LoginRequest;
 import com.teamalgo.algo.auth.dto.TokenResponse;
 import com.teamalgo.algo.auth.service.GithubOAuthService;
 import com.teamalgo.algo.auth.service.GoogleOAuthService;
+import com.teamalgo.algo.auth.service.KakaoOAuthService;
 import com.teamalgo.algo.global.common.api.ApiResponse;
 import com.teamalgo.algo.global.common.code.SuccessCode;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +18,7 @@ public class AuthController {
 
     private final GoogleOAuthService googleService;
     private final GithubOAuthService githubOAuthService;
+    private final KakaoOAuthService kakaoOAuthService;
 
     // 구글 로그인
     @PostMapping("/google-login")
@@ -28,8 +30,8 @@ public class AuthController {
     // 카카오 로그인
     @PostMapping("/kakao-login")
     public ResponseEntity<ApiResponse<TokenResponse>> kakaoLogin(@RequestBody LoginRequest loginRequest) {
-
-        return ApiResponse.success(SuccessCode._OK, null);
+        TokenResponse response = kakaoOAuthService.authenticateUser(loginRequest.getToken());
+        return ApiResponse.success(SuccessCode._OK, response);
     }
 
     // 깃허브 로그인
@@ -38,5 +40,4 @@ public class AuthController {
         TokenResponse response = githubOAuthService.authenticateUser(loginRequest.getToken());
         return ApiResponse.success(SuccessCode._OK, response);
     }
-
 }
