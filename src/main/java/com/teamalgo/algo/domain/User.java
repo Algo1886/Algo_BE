@@ -1,4 +1,4 @@
-package com.teamalgo.algo.user.domain;
+package com.teamalgo.algo.domain;
 
 import jakarta.persistence.*;
 import lombok.*;

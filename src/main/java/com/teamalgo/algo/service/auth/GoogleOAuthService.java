@@ -1,11 +1,11 @@
-package com.teamalgo.algo.auth.service;
+package com.teamalgo.algo.service.auth;
 
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
-import com.teamalgo.algo.auth.dto.TokenResponse;
-import com.teamalgo.algo.auth.security.GoogleTokenVerifier;
-import com.teamalgo.algo.auth.security.JwtTokenProvider;
-import com.teamalgo.algo.user.domain.User;
-import com.teamalgo.algo.user.service.UserService;
+import com.teamalgo.algo.dto.TokenResponse;
+import com.teamalgo.algo.security.GoogleTokenVerifier;
+import com.teamalgo.algo.security.JwtTokenProvider;
+import com.teamalgo.algo.domain.User;
+import com.teamalgo.algo.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

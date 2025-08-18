@@ -1,4 +1,4 @@
-package com.teamalgo.algo.auth.security;
+package com.teamalgo.algo.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.teamalgo.algo.global.common.api.ApiResponse;

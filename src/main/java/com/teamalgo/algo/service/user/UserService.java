@@ -1,7 +1,7 @@
-package com.teamalgo.algo.user.service;
+package com.teamalgo.algo.service.user;
 
-import com.teamalgo.algo.user.domain.User;
-import com.teamalgo.algo.user.repository.UserRepository;
+import com.teamalgo.algo.domain.User;
+import com.teamalgo.algo.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

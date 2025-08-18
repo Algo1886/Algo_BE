@@ -1,10 +1,10 @@
-package com.teamalgo.algo.auth.controller;
+package com.teamalgo.algo.controller;
 
-import com.teamalgo.algo.auth.dto.LoginRequest;
-import com.teamalgo.algo.auth.dto.TokenResponse;
-import com.teamalgo.algo.auth.service.GithubOAuthService;
-import com.teamalgo.algo.auth.service.GoogleOAuthService;
-import com.teamalgo.algo.auth.service.KakaoOAuthService;
+import com.teamalgo.algo.dto.LoginRequest;
+import com.teamalgo.algo.dto.TokenResponse;
+import com.teamalgo.algo.service.auth.GithubOAuthService;
+import com.teamalgo.algo.service.auth.GoogleOAuthService;
+import com.teamalgo.algo.service.auth.KakaoOAuthService;
 import com.teamalgo.algo.global.common.api.ApiResponse;
 import com.teamalgo.algo.global.common.code.SuccessCode;
 import lombok.RequiredArgsConstructor;

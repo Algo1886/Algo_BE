@@ -1,4 +1,4 @@
-package com.teamalgo.algo.auth.dto;
+package com.teamalgo.algo.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -9,9 +9,6 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class TokenResponse {
-
-    private String accessToken;
-    private String refreshToken;
-
+public class LoginRequest {
+    private String token;
 }

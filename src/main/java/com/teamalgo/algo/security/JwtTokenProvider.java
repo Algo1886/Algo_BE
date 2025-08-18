@@ -1,4 +1,4 @@
-package com.teamalgo.algo.auth.security;
+package com.teamalgo.algo.security;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;

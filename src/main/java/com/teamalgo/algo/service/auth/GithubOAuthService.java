@@ -1,12 +1,12 @@
-package com.teamalgo.algo.auth.service;
+package com.teamalgo.algo.service.auth;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.teamalgo.algo.auth.dto.TokenResponse;
-import com.teamalgo.algo.auth.security.JwtTokenProvider;
+import com.teamalgo.algo.dto.TokenResponse;
+import com.teamalgo.algo.security.JwtTokenProvider;
 import com.teamalgo.algo.global.common.code.ErrorCode;
 import com.teamalgo.algo.global.exception.CustomException;
-import com.teamalgo.algo.user.domain.User;
-import com.teamalgo.algo.user.service.UserService;
+import com.teamalgo.algo.domain.User;
+import com.teamalgo.algo.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
