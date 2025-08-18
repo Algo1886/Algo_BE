@@ -1,7 +1,7 @@
 package com.teamalgo.algo.global.config;
 
-import com.teamalgo.algo.auth.security.JwtAuthenticationFilter;
-import com.teamalgo.algo.auth.security.JwtTokenProvider;
+import com.teamalgo.algo.security.JwtAuthenticationFilter;
+import com.teamalgo.algo.security.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
