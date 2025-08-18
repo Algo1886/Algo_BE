@@ -6,7 +6,7 @@ import com.teamalgo.algo.dto.TokenResponse;
 import com.teamalgo.algo.security.JwtTokenProvider;
 import com.teamalgo.algo.global.common.code.ErrorCode;
 import com.teamalgo.algo.global.exception.CustomException;
-import com.teamalgo.algo.domain.User;
+import com.teamalgo.algo.domain.user.User;
 import com.teamalgo.algo.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

@@ -1,6 +1,6 @@
 package com.teamalgo.algo.repository;
 
-import com.teamalgo.algo.domain.User;
+import com.teamalgo.algo.domain.user.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

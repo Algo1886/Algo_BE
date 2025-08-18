@@ -1,5 +1,6 @@
-package com.teamalgo.algo.domain;
+package com.teamalgo.algo.domain.user;
 
+import com.teamalgo.algo.global.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -8,14 +9,26 @@ import lombok.*;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
-public class User {
+@Table(
+        name = "user",
+        uniqueConstraints = {
+//                @UniqueConstraint(columnNames = "handle"),
+                @UniqueConstraint(columnNames = {"provider", "providerId"})
+        }
+)
+public class User extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+//    @Column(nullable = false, unique = true)
+//    private String handle;
+
     @Column(nullable = false, length = 50)
     private String nickname;
+
+//    private String avatarUrl;
 
     @Column(nullable = false, length = 20)
     private String provider;  // google, kakao, github

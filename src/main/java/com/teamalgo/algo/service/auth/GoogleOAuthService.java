@@ -4,7 +4,7 @@ import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.teamalgo.algo.dto.TokenResponse;
 import com.teamalgo.algo.security.GoogleTokenVerifier;
 import com.teamalgo.algo.security.JwtTokenProvider;
-import com.teamalgo.algo.domain.User;
+import com.teamalgo.algo.domain.user.User;
 import com.teamalgo.algo.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
