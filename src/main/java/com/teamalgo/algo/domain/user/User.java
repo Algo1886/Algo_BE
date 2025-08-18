@@ -1,8 +1,15 @@
 package com.teamalgo.algo.domain.user;
 
+import com.teamalgo.algo.domain.record.Record;
+import com.teamalgo.algo.domain.bookmark.Bookmark;
+import com.teamalgo.algo.domain.review.ReviewLog;
+import com.teamalgo.algo.domain.stats.StatsDaily;
 import com.teamalgo.algo.global.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -35,5 +42,17 @@ public class User extends BaseEntity {
 
     @Column(nullable = false, unique = true, length = 100)
     private String providerId;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Record> records = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Bookmark> bookmarks = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ReviewLog> reviewLogs = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<StatsDaily> stats = new ArrayList<>();
 
 }
