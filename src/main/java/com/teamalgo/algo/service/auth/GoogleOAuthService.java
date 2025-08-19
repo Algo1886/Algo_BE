@@ -23,14 +23,10 @@ public class GoogleOAuthService {
         GoogleIdToken.Payload payload = googleTokenVerifier.verifyToken(token);
 
         String providerId = payload.getSubject();
-        String name = (String) payload.get("name");
+        String avatarUrl = (String) payload.get("picture"); // 구글 프로필 이미지
 
         User user = userService.findByProviderAndProviderId("google", providerId)
-                .orElseGet(() -> userService.saveUser(User.builder()
-                        .nickname(name)
-                        .provider("google")
-                        .providerId(providerId)
-                        .build()));
+                .orElseGet(() -> userService.createUser("google", providerId, avatarUrl));
 
         String accessToken = jwtTokenProvider.generateAccessToken(String.valueOf(user.getId()));
         String refreshToken = jwtTokenProvider.generateRefreshToken(String.valueOf(user.getId()));

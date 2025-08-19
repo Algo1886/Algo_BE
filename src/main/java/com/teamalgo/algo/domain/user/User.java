@@ -19,7 +19,7 @@ import java.util.List;
 @Table(
         name = "user",
         uniqueConstraints = {
-//                @UniqueConstraint(columnNames = "handle"),
+                @UniqueConstraint(columnNames = "username"),
                 @UniqueConstraint(columnNames = {"provider", "providerId"})
         }
 )
@@ -29,13 +29,10 @@ public class User extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-//    @Column(nullable = false, unique = true)
-//    private String handle;
+    @Column(nullable = false, unique = true)
+    private String username;
 
-    @Column(nullable = false, length = 50)
-    private String nickname;
-
-//    private String avatarUrl;
+    private String avatarUrl;
 
     @Column(nullable = false, length = 20)
     private String provider;  // google, kakao, github
