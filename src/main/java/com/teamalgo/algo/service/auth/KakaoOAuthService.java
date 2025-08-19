@@ -45,7 +45,7 @@ public class KakaoOAuthService {
             MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
             params.add("grant_type", "authorization_code");
             params.add("client_id", kakaoClientId);
-            params.add("redirect_uri", "http://localhost:3000/auth/callback");
+            params.add("redirect_uri", "http://localhost:3000/auth/kakao/callback");
             params.add("code", code);
 
             HttpEntity<MultiValueMap<String, String>> tokenRequest = new HttpEntity<>(params, headers);
@@ -77,29 +77,18 @@ public class KakaoOAuthService {
             String providerId = root.get("id").asText();
 
             // 3) 닉네임 결정 (재할당 대신 최종값 변수 하나로만 사용)
-            String nickname = null;
-            if (root.has("properties") && root.get("properties").has("nickname")) {
-                nickname = root.get("properties").get("nickname").asText(null);
-            }
-            if ((nickname == null || nickname.isBlank())
-                    && root.has("kakao_account")
+            String avatarUrl = null;
+            if (root.has("kakao_account")
                     && root.get("kakao_account").has("profile")
-                    && root.get("kakao_account").get("profile").has("nickname")) {
-                nickname = root.get("kakao_account").get("profile").get("nickname").asText(null);
-            }
-            if (nickname == null || nickname.isBlank()) {
-                nickname = "카카오유저";
+                    && root.get("kakao_account").get("profile").has("profile_image_url")) {
+                avatarUrl = root.get("kakao_account").get("profile").get("profile_image_url").asText(null);
             }
 
-            final String finalNickname = nickname; // 람다에서 쓸 값은 final 변수로 확정
+            final String finalAvatarUrl = avatarUrl;
 
             // 4) DB 저장 or 조회
             User user = userService.findByProviderAndProviderId("kakao", providerId)
-                    .orElseGet(() -> userService.saveUser(User.builder()
-                            .nickname(finalNickname)
-                            .provider("kakao")
-                            .providerId(providerId)
-                            .build()));
+                    .orElseGet(() -> userService.createUser("kakao", providerId, finalAvatarUrl));
 
             // 5) JWT 발급
             String accessToken = jwtTokenProvider.generateAccessToken(String.valueOf(user.getId()));

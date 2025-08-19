@@ -78,15 +78,11 @@ public class GithubOAuthService {
             Map<String, Object> userMap = objectMapper.readValue(userResponse.getBody(), Map.class);
 
             String providerId = String.valueOf(userMap.get("id"));
-            String name = (String) userMap.get("login");
+            String avatarUrl = (String) userMap.get("avatar_url");
 
             // DB에 사용자 저장 or 기존 사용자 조회
             User user = userService.findByProviderAndProviderId("github", providerId)
-                    .orElseGet(() -> userService.saveUser(User.builder()
-                            .nickname(name)
-                            .provider("github")
-                            .providerId(providerId)
-                            .build()));
+                    .orElseGet(() -> userService.createUser("github", providerId, avatarUrl));
 
             // JWT 발급
             String accessToken = jwtTokenProvider.generateAccessToken(String.valueOf(user.getId()));
