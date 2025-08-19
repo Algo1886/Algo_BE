@@ -33,6 +33,9 @@ public class KakaoOAuthService {
     @Value("${KAKAO_CLIENT_ID}")
     private String kakaoClientId;
 
+    @Value("${KAKAO_REDIRECT_URI}")
+    private String kakaoRedirectUri;
+
     @Transactional
     public TokenResponse authenticateUser(String code) {
         try {
@@ -45,7 +48,7 @@ public class KakaoOAuthService {
             MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
             params.add("grant_type", "authorization_code");
             params.add("client_id", kakaoClientId);
-            params.add("redirect_uri", "http://localhost:3000/auth/kakao/callback");
+            params.add("redirect_uri", kakaoRedirectUri);
             params.add("code", code);
 
             HttpEntity<MultiValueMap<String, String>> tokenRequest = new HttpEntity<>(params, headers);
