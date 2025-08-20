@@ -1,6 +1,9 @@
 package com.teamalgo.algo.service.user;
 
 import com.teamalgo.algo.domain.user.User;
+import com.teamalgo.algo.dto.UserResponse;
+import com.teamalgo.algo.global.common.code.ErrorCode;
+import com.teamalgo.algo.global.exception.CustomException;
 import com.teamalgo.algo.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -16,6 +19,11 @@ public class UserService {
 
     public Optional<User> findByProviderAndProviderId(String provider, String providerId) {
         return userRepository.findByProviderAndProviderId(provider, providerId);
+    }
+
+    public UserResponse getUserInfo (Long userId) {
+        return UserResponse.from(userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND)));
     }
 
     public User saveUser(User user) {
