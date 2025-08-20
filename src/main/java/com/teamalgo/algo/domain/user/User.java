@@ -52,4 +52,8 @@ public class User extends BaseEntity {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<StatsDaily> stats = new ArrayList<>();
 
+    public void update(String username, String avatarUrl) {
+        if (username != null) this.username = username;
+        if (avatarUrl != null) this.avatarUrl = avatarUrl;
+    }
 }
