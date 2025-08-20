@@ -34,4 +34,12 @@ public class UserController {
         UserResponse response = userService.updateUser(userId, request);
         return ApiResponse.success(SuccessCode._OK, response);
     }
+
+    // 사용자 탈퇴
+    @DeleteMapping("/me")
+    public ResponseEntity<ApiResponse<Object>> deleteUser(Authentication authentication) {
+        Long userId = Long.parseLong(authentication.getName());
+        userService.deleteUser(userId);
+        return ApiResponse.success(SuccessCode._NO_CONTENT, null);
+    }
 }

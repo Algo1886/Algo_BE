@@ -60,6 +60,12 @@ public class UserService {
         return UserResponse.from(user);
     }
 
+    public void deleteUser(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+        userRepository.delete(user);
+    }
+
     public String generateRandomUsername() {
         // UUID 이용해서 랜덤 handle 생성
         String prefix = "algo_";
