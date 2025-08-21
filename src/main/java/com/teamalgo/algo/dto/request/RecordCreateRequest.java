@@ -1,4 +1,8 @@
-package com.teamalgo.algo.dto;
+package com.teamalgo.algo.dto.request;
+import com.teamalgo.algo.dto.RecordCodeDTO;
+import com.teamalgo.algo.dto.RecordCoreIdeaDTO;
+import com.teamalgo.algo.dto.RecordLinkDTO;
+import com.teamalgo.algo.dto.RecordStepDTO;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
