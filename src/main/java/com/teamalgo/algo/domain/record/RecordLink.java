@@ -21,4 +21,9 @@ public class RecordLink {
 
     @Column(nullable = false)
     private String url;
+
+    public void update(String url) {
+        this.url = url;
+    }
+
 }

@@ -30,7 +30,7 @@ public class RecordSearchRequest {
 
     private String search;    // 검색어
 
-    private String author;    // 작성자 handle (로그인 안 한 경우 무시)
+    private String author;    // 작성자
 
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDate startDate;  // 조회 시작일

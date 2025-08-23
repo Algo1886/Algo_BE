@@ -1,26 +1,31 @@
 package com.teamalgo.algo.dto;
 
-import com.teamalgo.algo.domain.record.RecordCoreIdea;  // RecordCoreIdea 엔티티 import
-import com.teamalgo.algo.domain.record.Record;     // 올바른 Record 엔티티 import
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
-
-import jakarta.validation.constraints.NotNull;
+import com.teamalgo.algo.domain.record.Record;
+import com.teamalgo.algo.domain.record.RecordCoreIdea;
+import lombok.*;
 
 @Getter
 @Setter
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class RecordCoreIdeaDTO {
 
-    @NotNull(message = "Content cannot be null")
+    private Long id;
     private String content;
-
 
     public RecordCoreIdea toEntity(Record record) {
         return RecordCoreIdea.builder()
+                .id(id)
                 .record(record)
                 .content(content)
+                .build();
+    }
+
+    public static RecordCoreIdeaDTO fromEntity(RecordCoreIdea entity) {
+        return RecordCoreIdeaDTO.builder()
+                .id(entity.getId())
+                .content(entity.getContent())
                 .build();
     }
 }
