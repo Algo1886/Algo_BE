@@ -7,12 +7,15 @@ import com.teamalgo.algo.domain.stats.StatsDaily;
 import com.teamalgo.algo.global.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.ColumnDefault;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
 @Getter
+@Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
@@ -39,6 +42,17 @@ public class User extends BaseEntity {
 
     @Column(nullable = false, unique = true, length = 100)
     private String providerId;
+
+    @Column(nullable = false)
+    @ColumnDefault("0")
+    private int currentStreak;   // 현재 스트릭 (연속 일수)
+
+    @Column(nullable = false)
+    @ColumnDefault("0")
+    private int maxStreak;       // 최장 스트릭
+
+    @Column
+    private LocalDate lastRecordedDate; // 마지막 기록한 날짜
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Record> records = new ArrayList<>();
