@@ -9,6 +9,6 @@ import java.util.Optional;
 public interface RecordRepository extends JpaRepository<Record, Long> {
 
     @EntityGraph(attributePaths = {"codes", "steps", "ideas", "links"})
-    Optional<Record> findById(Long id);
+    Optional<Record> findWithDetailsById(Long id);
 
 }

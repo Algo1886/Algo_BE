@@ -31,7 +31,6 @@ public class RecordService {
     private final ProblemRepository problemRepository;
 
     private final CategoryRepository categoryRepository;
-    private final RecordCategoryRepository recordCategoryRepository;
 
     // 레코드 생성
     @Transactional
@@ -104,7 +103,7 @@ public class RecordService {
 
     // 조회
     public com.teamalgo.algo.domain.record.Record getRecordById(Long id) {
-        return recordRepository.findById(id)
+        return recordRepository.findWithDetailsById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Record not found: " + id));
     }
 
@@ -197,7 +196,7 @@ public class RecordService {
         for (RecordCodeDTO dto : dtos) {
             if (dto.getId() != null && current.containsKey(dto.getId())) {
                 RecordCode entity = current.get(dto.getId());
-                entity.update(dto.getLanguage(), dto.getCode(), dto.getVerdict(), dto.getSnippetOrder()); // ✅ 수정
+                entity.update(dto.getLanguage(), dto.getCode(), dto.getVerdict(), dto.getSnippetOrder());
                 next.add(entity);
             } else {
                 next.add(dto.toEntity(record));

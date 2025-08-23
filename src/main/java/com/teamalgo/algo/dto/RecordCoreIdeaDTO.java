@@ -9,6 +9,7 @@ import lombok.*;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+// 레코드 상세 조회시에 사용
 public class RecordCoreIdeaDTO {
 
     private Long id;
