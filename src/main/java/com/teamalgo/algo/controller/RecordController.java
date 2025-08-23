@@ -22,27 +22,19 @@ public class RecordController {
 
     private final RecordService recordService;
 
-    // 레코드 생성
-    @PostMapping
-    public ResponseEntity<ApiResponse<RecordResponse.Data>> createRecord(
-            Authentication authentication,
-            @RequestBody RecordCreateRequest request
-    ) {
-        User user = (User) authentication.getPrincipal();
-        var record = recordService.createRecord(user, request);
-        var response = recordService.createRecordResponse(record);
-        return ApiResponse.success(SuccessCode._CREATED, response);
-    }
-
     // 단일 조회
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<RecordResponse.Data>> getRecord(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<RecordResponse.Data>> getRecord(
+            @PathVariable Long id,
+            Authentication authentication
+    ) {
+        User user = (User) authentication.getPrincipal(); // 현재 로그인 사용자
         var record = recordService.getRecordById(id);
-        var response = recordService.createRecordResponse(record);
+        var response = recordService.createRecordResponse(record, user);
         return ApiResponse.success(SuccessCode._OK, response);
     }
 
-    // 목록 조회 (검색)
+    // 목록 조회
     @GetMapping
     public ResponseEntity<ApiResponse<RecordListResponse.Data>> searchRecords(RecordSearchRequest request) {
         Page<com.teamalgo.algo.domain.record.Record> records = recordService.searchRecords(request);
@@ -50,14 +42,28 @@ public class RecordController {
         return ApiResponse.success(SuccessCode._OK, response);
     }
 
-    // 업데이트
+    // 생성
+    @PostMapping
+    public ResponseEntity<ApiResponse<RecordResponse.Data>> createRecord(
+            Authentication authentication,
+            @RequestBody RecordCreateRequest request
+    ) {
+        User user = (User) authentication.getPrincipal();
+        var record = recordService.createRecord(user, request);
+        var response = recordService.createRecordResponse(record, user);
+        return ApiResponse.success(SuccessCode._CREATED, response);
+    }
+
+    // 수정
     @PatchMapping("/{id}")
     public ResponseEntity<ApiResponse<RecordResponse.Data>> patchRecord(
             @PathVariable Long id,
-            @RequestBody RecordUpdateRequest request
+            @RequestBody RecordUpdateRequest request,
+            Authentication authentication
     ) {
+        User user = (User) authentication.getPrincipal();
         var record = recordService.patchRecord(id, request);
-        var response = recordService.createRecordResponse(record);
+        var response = recordService.createRecordResponse(record, user);
         return ApiResponse.success(SuccessCode._OK, response);
     }
 

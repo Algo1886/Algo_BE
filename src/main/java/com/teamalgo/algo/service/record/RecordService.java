@@ -31,7 +31,7 @@ public class RecordService {
     private final ProblemRepository problemRepository;
 
     private final CategoryRepository categoryRepository;
-
+    private final BookmarkService bookmarkService;
     // 레코드 생성
     @Transactional
     public com.teamalgo.algo.domain.record.Record createRecord(User user, RecordCreateRequest req) {
@@ -142,7 +142,7 @@ public class RecordService {
     }
 
     // Response dto 변환
-    public RecordResponse.Data createRecordResponse(com.teamalgo.algo.domain.record.Record record) {
+    public RecordResponse.Data createRecordResponse(com.teamalgo.algo.domain.record.Record record, User user) {
         return RecordResponse.Data.builder()
                 .id(record.getId())
                 .problem(mapProblem(record.getProblem()))
@@ -157,7 +157,7 @@ public class RecordService {
                 .author(mapAuthor(record.getUser()))
                 .isDraft(record.isDraft())
                 .isPublished(record.isPublished())
-                .isBookmarked(false)
+                .isBookmarked(bookmarkService.isBookmarked(user, record))
                 .createdAt(record.getCreatedAt())
                 .updatedAt(record.getUpdatedAt())
                 .build();
