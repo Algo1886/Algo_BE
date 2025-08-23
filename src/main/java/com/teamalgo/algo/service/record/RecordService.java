@@ -77,7 +77,7 @@ public class RecordService {
 
         // 카테고리 저장
         if (req.getCategories() != null) {
-            List<RecordCategory> recordCategories = req.getCategories().stream()
+            List<RecordCategory> recordCategories = new HashSet<>(req.getCategories()).stream()
                     .map(catName -> {
                         Category category = categoryRepository.findByName(catName)
                                 .orElseGet(() -> categoryRepository.save(
@@ -146,7 +146,7 @@ public class RecordService {
         return RecordResponse.Data.builder()
                 .id(record.getId())
                 .problem(mapProblem(record.getProblem()))
-                .categories(Collections.emptyList()) // TODO: Category 매핑
+                .categories(mapCategories(record))
                 .status(record.getStatus())
                 .difficulty(record.getDifficulty() != null ? record.getDifficulty() : 0)
                 .detail(record.getDetail())
@@ -168,7 +168,7 @@ public class RecordService {
                 .map(r -> RecordDTO.builder()
                         .id(r.getId())
                         .title(r.getProblem().getTitle())
-                        .categories(Collections.emptyList()) // TODO: Category 매핑
+                        .categories(mapCategories(r))
                         .author(r.getUser().getUsername())
                         .createdAt(r.getCreatedAt())
                         .build())
@@ -267,9 +267,7 @@ public class RecordService {
     }
 
 
-    /* =====================
-       매핑 도우미
-       ===================== */
+    // 매핑 헬퍼
     private ProblemDTO mapProblem(Problem problem) {
         return ProblemDTO.builder()
                 .id(problem.getId())
@@ -286,5 +284,10 @@ public class RecordService {
                 .username(user.getUsername())
                 .avatarUrl(user.getAvatarUrl())
                 .build();
+    }
+    private List<String> mapCategories(com.teamalgo.algo.domain.record.Record record) {
+        return record.getRecordCategories().stream()
+                .map(rc -> rc.getCategory().getName())
+                .toList();
     }
 }
