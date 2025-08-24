@@ -2,7 +2,7 @@ package com.teamalgo.algo.service.auth;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.teamalgo.algo.dto.TokenResponse;
+import com.teamalgo.algo.dto.response.TokenResponse;
 import com.teamalgo.algo.security.JwtTokenProvider;
 import com.teamalgo.algo.global.common.code.ErrorCode;
 import com.teamalgo.algo.global.exception.CustomException;

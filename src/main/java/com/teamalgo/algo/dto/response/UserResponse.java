@@ -1,4 +1,4 @@
-package com.teamalgo.algo.dto;
+package com.teamalgo.algo.dto.response;
 
 import com.teamalgo.algo.domain.user.User;
 import lombok.AllArgsConstructor;

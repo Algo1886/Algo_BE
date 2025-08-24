@@ -1,6 +1,6 @@
 package com.teamalgo.algo.domain.category;
 
-import com.teamalgo.algo.domain.problem.Problem;
+import com.teamalgo.algo.domain.record.Record;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -10,20 +10,20 @@ import lombok.*;
 @Builder
 @Entity
 @Table(
-        name = "problem_category",
+        name = "record_category",
         uniqueConstraints = {
-                @UniqueConstraint(columnNames = {"problem_id", "category_id"})
+                @UniqueConstraint(columnNames = {"record_id", "category_id"})
         }
 )
-public class ProblemCategory {
+public class RecordCategory {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "problem_id")
-    private Problem problem;
+    @JoinColumn(name = "record_id")
+    private Record record;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "category_id")

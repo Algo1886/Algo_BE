@@ -13,7 +13,6 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class RecordCode {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -30,8 +29,14 @@ public class RecordCode {
     private String code;
 
     @Column(nullable = false)
-    private String verdict; // pass | fail
+    private String verdict;
 
     @Column(nullable = false)
     private int snippetOrder;
+    public void update(String language, String code, String verdict, int snippetOrder) {
+        this.language = language;
+        this.code = code;
+        this.verdict = verdict;
+        this.snippetOrder = snippetOrder;
+    }
 }

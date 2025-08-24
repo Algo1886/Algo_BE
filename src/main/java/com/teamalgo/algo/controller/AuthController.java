@@ -1,7 +1,7 @@
 package com.teamalgo.algo.controller;
 
-import com.teamalgo.algo.dto.LoginRequest;
-import com.teamalgo.algo.dto.TokenResponse;
+import com.teamalgo.algo.dto.request.LoginRequest;
+import com.teamalgo.algo.dto.response.TokenResponse;
 import com.teamalgo.algo.service.auth.GithubOAuthService;
 import com.teamalgo.algo.service.auth.GoogleOAuthService;
 import com.teamalgo.algo.service.auth.KakaoOAuthService;

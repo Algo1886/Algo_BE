@@ -1,14 +1,15 @@
-package com.teamalgo.algo.dto;
+package com.teamalgo.algo.dto.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @Getter
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class LoginRequest {
-    private String token;
+public class UserUpdateRequest {
+
+    private String username;
+    private String avatarUrl;
+
 }

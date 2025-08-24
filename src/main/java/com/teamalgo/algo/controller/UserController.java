@@ -1,13 +1,11 @@
 package com.teamalgo.algo.controller;
 
-import com.teamalgo.algo.dto.UserResponse;
-import com.teamalgo.algo.dto.UserUpdateRequest;
+import com.teamalgo.algo.dto.response.UserResponse;
+import com.teamalgo.algo.dto.request.UserUpdateRequest;
 import com.teamalgo.algo.global.common.api.ApiResponse;
 import com.teamalgo.algo.global.common.code.SuccessCode;
 import com.teamalgo.algo.service.user.UserService;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import lombok.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
