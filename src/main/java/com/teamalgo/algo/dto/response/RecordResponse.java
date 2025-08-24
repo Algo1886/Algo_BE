@@ -36,6 +36,7 @@ public class RecordResponse {
         private boolean isDraft;
         private boolean isPublished;
         private boolean isBookmarked;
+        private boolean isOwner; // 프론트에서 수정, 삭제 버튼 띄울 수 있게
 
         private LocalDateTime createdAt;
         private LocalDateTime updatedAt;

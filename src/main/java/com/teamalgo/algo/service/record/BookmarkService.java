@@ -54,23 +54,9 @@ public class BookmarkService {
 
     // 북마크한 레코드 목록 조회
     public List<RecordDTO> getBookmarkedRecords(User user) {
-        List<Bookmark> bookmarks = bookmarkRepository.findByUser(user);
-
-        return bookmarks.stream()
-                .map(bookmark -> {
-                    Record record = bookmark.getRecord();
-                    return RecordDTO.builder()
-                            .id(record.getId())
-                            .title(record.getProblem().getTitle())
-                            .categories(
-                                    record.getRecordCategories().stream()
-                                            .map(rc -> rc.getCategory().getName())
-                                            .toList()
-                            )
-                            .author(record.getUser().getUsername())
-                            .createdAt(record.getCreatedAt())
-                            .build();
-                })
+        return bookmarkRepository.findByUser(user).stream()
+                .map(Bookmark::getRecord)
+                .map(RecordDTO::from)
                 .toList();
     }
 }

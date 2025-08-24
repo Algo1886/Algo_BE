@@ -7,7 +7,7 @@ import com.teamalgo.algo.global.common.code.SuccessCode;
 import com.teamalgo.algo.service.record.BookmarkService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,10 +22,9 @@ public class BookmarkController {
     // 북마크 추가
     @PostMapping("/{recordId}")
     public ResponseEntity<ApiResponse<Void>> addBookmark(
-            Authentication authentication,
+            @AuthenticationPrincipal User user,
             @PathVariable Long recordId
     ) {
-        User user = (User) authentication.getPrincipal();
         bookmarkService.addBookmark(user, recordId);
         return ApiResponse.success(SuccessCode._CREATED, null);
     }
@@ -33,18 +32,18 @@ public class BookmarkController {
     // 북마크 삭제
     @DeleteMapping("/{recordId}")
     public ResponseEntity<ApiResponse<Void>> removeBookmark(
-            Authentication authentication,
+            @AuthenticationPrincipal User user,
             @PathVariable Long recordId
     ) {
-        User user = (User) authentication.getPrincipal();
         bookmarkService.removeBookmark(user, recordId);
         return ApiResponse.success(SuccessCode._OK, null);
     }
 
     // 북마크 목록 조회
     @GetMapping
-    public ResponseEntity<ApiResponse<List<RecordDTO>>> getBookmarks(Authentication authentication) {
-        User user = (User) authentication.getPrincipal();
+    public ResponseEntity<ApiResponse<List<RecordDTO>>> getBookmarks(
+            @AuthenticationPrincipal User user
+    ) {
         var response = bookmarkService.getBookmarkedRecords(user);
         return ApiResponse.success(SuccessCode._OK, response);
     }

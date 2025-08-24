@@ -7,7 +7,7 @@ import com.teamalgo.algo.global.common.code.SuccessCode;
 import com.teamalgo.algo.service.record.CoreIdeaService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -21,8 +21,9 @@ public class CoreIdeaController {
 
     // 내 아이디어 전체 조회
     @GetMapping("/ideas")
-    public ResponseEntity<ApiResponse<List<CoreIdeaDTO>>> getMyIdeas(Authentication authentication) {
-        User user = (User) authentication.getPrincipal();
+    public ResponseEntity<ApiResponse<List<CoreIdeaDTO>>> getMyIdeas(
+            @AuthenticationPrincipal User user
+    ) {
         List<CoreIdeaDTO> ideas = coreIdeaService.getUserIdeas(user.getId());
         return ApiResponse.success(SuccessCode._OK, ideas);
     }

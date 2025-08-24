@@ -15,6 +15,7 @@ import com.teamalgo.algo.repository.*;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -119,9 +120,12 @@ public class RecordService {
 
     // 레코드 수정
     @Transactional
-    public com.teamalgo.algo.domain.record.Record patchRecord(Long id, RecordUpdateRequest req) {
+    public com.teamalgo.algo.domain.record.Record patchRecord(Long id, RecordUpdateRequest req, User user) {
         com.teamalgo.algo.domain.record.Record record = getRecordById(id);
 
+        if (!record.getUser().getId().equals(user.getId())) {
+            throw new AccessDeniedException("권한이 없습니다.");
+        }
 
         record.applyPatch(req);
 
@@ -136,8 +140,13 @@ public class RecordService {
 
     // 레코드 삭제
     @Transactional
-    public void deleteRecord(Long id) {
+    public void deleteRecord(Long id, User user) {
         com.teamalgo.algo.domain.record.Record record = getRecordById(id);
+
+        // 소유자 검증
+        if (!record.getUser().getId().equals(user.getId())) {
+            throw new AccessDeniedException("권한이 없습니다.");
+        }
         recordRepository.delete(record);
     }
 
@@ -158,6 +167,7 @@ public class RecordService {
                 .isDraft(record.isDraft())
                 .isPublished(record.isPublished())
                 .isBookmarked(bookmarkService.isBookmarked(user, record))
+                .isOwner(record.getUser().getId().equals(user.getId()))
                 .createdAt(record.getCreatedAt())
                 .updatedAt(record.getUpdatedAt())
                 .build();
@@ -165,13 +175,7 @@ public class RecordService {
 
     public RecordListResponse.Data createRecordListResponse(Page<com.teamalgo.algo.domain.record.Record> records) {
         List<RecordDTO> recordDTOs = records.stream()
-                .map(r -> RecordDTO.builder()
-                        .id(r.getId())
-                        .title(r.getProblem().getTitle())
-                        .categories(mapCategories(r))
-                        .author(r.getUser().getUsername())
-                        .createdAt(r.getCreatedAt())
-                        .build())
+                .map(RecordDTO::from)
                 .toList();
 
         return RecordListResponse.Data.builder()
