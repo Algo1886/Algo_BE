@@ -79,8 +79,11 @@ jobs:
             docker rm algo-server || true
             docker image rm ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_REPONAME }} || true
             docker pull ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_REPONAME }}
+            docker network create algo-network || true
+            docker network connect algo-network redis || true
             docker run -d -p 8080:8080 \
             --env-file /home/ubuntu/algo/.env \
             --name algo-server \
+            --network algo-network \
             --restart=always \
             ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_REPONAME }}
