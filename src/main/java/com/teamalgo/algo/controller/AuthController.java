@@ -2,6 +2,8 @@ package com.teamalgo.algo.controller;
 
 import com.teamalgo.algo.dto.LoginRequest;
 import com.teamalgo.algo.dto.TokenResponse;
+import com.teamalgo.algo.dto.request.TokenRequest;
+import com.teamalgo.algo.service.auth.AuthService;
 import com.teamalgo.algo.service.auth.GithubOAuthService;
 import com.teamalgo.algo.service.auth.GoogleOAuthService;
 import com.teamalgo.algo.service.auth.KakaoOAuthService;
@@ -9,6 +11,7 @@ import com.teamalgo.algo.global.common.api.ApiResponse;
 import com.teamalgo.algo.global.common.code.SuccessCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -19,6 +22,7 @@ public class AuthController {
     private final GoogleOAuthService googleService;
     private final GithubOAuthService githubOAuthService;
     private final KakaoOAuthService kakaoOAuthService;
+    private final AuthService authService;
 
     // 구글 로그인
     @PostMapping("/google-login")
@@ -39,5 +43,20 @@ public class AuthController {
     public ResponseEntity<ApiResponse<TokenResponse>> githubLogin(@RequestBody LoginRequest loginRequest) {
         TokenResponse response = githubOAuthService.authenticateUser(loginRequest.getToken());
         return ApiResponse.success(SuccessCode._OK, response);
+    }
+
+    // refresh token 재발급
+    @PostMapping("/refresh")
+    public ResponseEntity<ApiResponse<TokenResponse>> refreshToken(@RequestBody TokenRequest request) {
+        TokenResponse response = authService.refresh(request.getRefreshToken());
+        return ApiResponse.success(SuccessCode._OK, response);
+    }
+
+    // 로그아웃
+    @PostMapping("/logout")
+    public ResponseEntity<ApiResponse<TokenResponse>> logout(@RequestBody TokenRequest request, Authentication authentication) {
+        Long userId = Long.parseLong(authentication.getName());
+        authService.logout(userId, request.getRefreshToken());
+        return ApiResponse.success(SuccessCode._NO_CONTENT, null);
     }
 }
