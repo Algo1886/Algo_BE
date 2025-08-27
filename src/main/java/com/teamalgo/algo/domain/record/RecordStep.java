@@ -28,4 +28,9 @@ public class RecordStep {
     @Lob
     @Column(nullable = false)
     private String text;
+
+    public void update(int stepOrder, String text) {
+        this.stepOrder = stepOrder;
+        this.text = text;
+    }
 }

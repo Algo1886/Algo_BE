@@ -1,4 +1,4 @@
-package com.teamalgo.algo.dto;
+package com.teamalgo.algo.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

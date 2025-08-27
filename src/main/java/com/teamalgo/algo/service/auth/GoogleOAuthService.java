@@ -1,7 +1,7 @@
 package com.teamalgo.algo.service.auth;
 
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
-import com.teamalgo.algo.dto.TokenResponse;
+import com.teamalgo.algo.dto.response.TokenResponse;
 import com.teamalgo.algo.security.GoogleTokenVerifier;
 import com.teamalgo.algo.domain.user.User;
 import com.teamalgo.algo.service.user.UserService;
