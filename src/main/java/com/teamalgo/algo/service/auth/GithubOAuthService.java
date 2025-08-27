@@ -2,7 +2,6 @@ package com.teamalgo.algo.service.auth;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.teamalgo.algo.dto.response.TokenResponse;
-import com.teamalgo.algo.security.JwtTokenProvider;
 import com.teamalgo.algo.global.common.code.ErrorCode;
 import com.teamalgo.algo.global.exception.CustomException;
 import com.teamalgo.algo.domain.user.User;
@@ -21,8 +20,8 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class GithubOAuthService {
 
-    private final JwtTokenProvider jwtTokenProvider;
     private final UserService userService;
+    private final AuthService authService;
 
     private ObjectMapper objectMapper = new ObjectMapper();
 
@@ -85,11 +84,7 @@ public class GithubOAuthService {
                     .orElseGet(() -> userService.createUser("github", providerId, avatarUrl));
 
             // JWT 발급
-            String accessToken = jwtTokenProvider.generateAccessToken(String.valueOf(user.getId()));
-            String refreshToken = jwtTokenProvider.generateRefreshToken(String.valueOf(user.getId()));
-
-            return new TokenResponse(accessToken, refreshToken);
-
+            return authService.issueTokens(user);
         } catch (Exception e) {
             throw new CustomException(ErrorCode.OAUTH_FAILED);
         }

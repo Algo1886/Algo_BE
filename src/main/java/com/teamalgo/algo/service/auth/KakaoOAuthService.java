@@ -3,7 +3,6 @@ package com.teamalgo.algo.service.auth;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.teamalgo.algo.dto.response.TokenResponse;
-import com.teamalgo.algo.security.JwtTokenProvider;
 import com.teamalgo.algo.global.common.code.ErrorCode;
 import com.teamalgo.algo.global.exception.CustomException;
 import com.teamalgo.algo.domain.user.User;
@@ -25,7 +24,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class KakaoOAuthService {
 
-    private final JwtTokenProvider jwtTokenProvider;
+    private final AuthService authService;
     private final UserService userService;
     private final RestTemplate restTemplate = new RestTemplate();
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -94,10 +93,7 @@ public class KakaoOAuthService {
                     .orElseGet(() -> userService.createUser("kakao", providerId, finalAvatarUrl));
 
             // 5) JWT 발급
-            String accessToken = jwtTokenProvider.generateAccessToken(String.valueOf(user.getId()));
-            String refreshToken = jwtTokenProvider.generateRefreshToken(String.valueOf(user.getId()));
-
-            return new TokenResponse(accessToken, refreshToken);
+            return authService.issueTokens(user);
 
         } catch (Exception e) {
             log.error("카카오 로그인 처리 중 오류 발생", e);

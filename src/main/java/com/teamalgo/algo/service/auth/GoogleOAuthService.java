@@ -3,7 +3,6 @@ package com.teamalgo.algo.service.auth;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.teamalgo.algo.dto.response.TokenResponse;
 import com.teamalgo.algo.security.GoogleTokenVerifier;
-import com.teamalgo.algo.security.JwtTokenProvider;
 import com.teamalgo.algo.domain.user.User;
 import com.teamalgo.algo.service.user.UserService;
 import lombok.RequiredArgsConstructor;
@@ -15,8 +14,8 @@ import org.springframework.transaction.annotation.Transactional;
 public class GoogleOAuthService {
 
     private final GoogleTokenVerifier googleTokenVerifier;
-    private final JwtTokenProvider jwtTokenProvider;
     private final UserService userService;
+    private final AuthService authService;
 
     @Transactional
     public TokenResponse authenticateUser(String token) {
@@ -28,8 +27,6 @@ public class GoogleOAuthService {
         User user = userService.findByProviderAndProviderId("google", providerId)
                 .orElseGet(() -> userService.createUser("google", providerId, avatarUrl));
 
-        String accessToken = jwtTokenProvider.generateAccessToken(String.valueOf(user.getId()));
-        String refreshToken = jwtTokenProvider.generateRefreshToken(String.valueOf(user.getId()));
-        return new TokenResponse(accessToken, refreshToken);
+        return authService.issueTokens(user);
     }
 }
