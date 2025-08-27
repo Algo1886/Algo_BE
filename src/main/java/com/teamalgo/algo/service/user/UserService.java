@@ -1,8 +1,8 @@
 package com.teamalgo.algo.service.user;
 
 import com.teamalgo.algo.domain.user.User;
-import com.teamalgo.algo.dto.UserResponse;
-import com.teamalgo.algo.dto.UserUpdateRequest;
+import com.teamalgo.algo.dto.response.UserResponse;
+import com.teamalgo.algo.dto.request.UserUpdateRequest;
 import com.teamalgo.algo.global.common.code.ErrorCode;
 import com.teamalgo.algo.global.exception.CustomException;
 import com.teamalgo.algo.repository.UserRepository;

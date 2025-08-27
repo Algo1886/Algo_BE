@@ -1,7 +1,7 @@
 package com.teamalgo.algo.service.auth;
 
 import com.teamalgo.algo.domain.user.User;
-import com.teamalgo.algo.dto.TokenResponse;
+import com.teamalgo.algo.dto.response.TokenResponse;
 import com.teamalgo.algo.global.common.code.ErrorCode;
 import com.teamalgo.algo.global.exception.CustomException;
 import com.teamalgo.algo.security.JwtTokenProvider;
