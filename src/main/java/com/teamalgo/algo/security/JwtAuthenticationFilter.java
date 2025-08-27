@@ -25,7 +25,10 @@ import java.util.List;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private static final List<String> EXCLUDED_PATHS = List.of(
-            "/api/auth",   // 로그인, 회원가입
+            "/api/auth/kakao-login",
+            "/api/auth/google-login",
+            "/api/auth/github-login",
+            "/api/auth/refresh",
             "/swagger-ui", // Swagger
             "/v3/api-docs" // OpenAPI docs
     );
