@@ -12,6 +12,7 @@ import com.teamalgo.algo.dto.response.RecordListResponse;
 import com.teamalgo.algo.dto.response.RecordResponse;
 import com.teamalgo.algo.repository.*;
 
+import com.teamalgo.algo.service.stats.StatsService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
@@ -31,6 +32,7 @@ public class RecordService {
     private final ProblemRepository problemRepository;
     private final CategoryRepository categoryRepository;
     private final BookmarkService bookmarkService;
+    private final StatsService statsService;
 
     // 레코드 생성
     @Transactional
@@ -103,6 +105,10 @@ public class RecordService {
 
             record.getRecordCategories().addAll(recordCategories);
         }
+
+        // 스트릭 기록
+        Boolean isSuccess = record.getStatus().equals("success");
+        statsService.updateStats(user, isSuccess);
 
         return recordRepository.save(record);
     }
