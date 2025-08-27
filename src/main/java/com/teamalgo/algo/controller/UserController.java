@@ -3,6 +3,7 @@ package com.teamalgo.algo.controller;
 import com.teamalgo.algo.dto.response.UserResponse;
 import com.teamalgo.algo.dto.request.UserUpdateRequest;
 import com.teamalgo.algo.dto.response.StreakCalendarResponse;
+import com.teamalgo.algo.dto.response.UserStatsResponse;
 import com.teamalgo.algo.global.common.api.ApiResponse;
 import com.teamalgo.algo.global.common.code.SuccessCode;
 import com.teamalgo.algo.service.stats.StatsService;
@@ -51,4 +52,13 @@ public class UserController {
         StreakCalendarResponse response = statsService.getYearlyStreak(userId);
         return ApiResponse.success(SuccessCode._OK, response);
     }
+
+    // 사용자 통계 조회
+    @GetMapping("/stats")
+    public ResponseEntity<ApiResponse<UserStatsResponse>> getStats (Authentication authentication) {
+        Long userId = Long.parseLong(authentication.getName());
+        UserStatsResponse response = statsService.getUserStats(userId);
+        return ApiResponse.success(SuccessCode._OK, response);
+    }
+
 }
