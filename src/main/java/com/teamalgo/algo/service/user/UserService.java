@@ -18,6 +18,10 @@ import java.util.UUID;
 public class UserService {
 
     private final UserRepository userRepository;
+    @Transactional(readOnly = true)
+    public Optional<User> findById(Long id) {
+        return userRepository.findById(id);
+    }
 
     public Optional<User> findByProviderAndProviderId(String provider, String providerId) {
         return userRepository.findByProviderAndProviderId(provider, providerId);

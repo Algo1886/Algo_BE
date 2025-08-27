@@ -17,9 +17,7 @@ public class RecordStepDTO {
 
     public RecordStep toEntity(Record record) {
         return RecordStep.builder()
-                .id(id)
                 .record(record)
-                .stepOrder(stepOrder)
                 .text(text)
                 .build();
     }

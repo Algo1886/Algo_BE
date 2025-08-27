@@ -17,7 +17,6 @@ public class RecordCoreIdeaDTO {
 
     public RecordCoreIdea toEntity(Record record) {
         return RecordCoreIdea.builder()
-                .id(id)
                 .record(record)
                 .content(content)
                 .build();

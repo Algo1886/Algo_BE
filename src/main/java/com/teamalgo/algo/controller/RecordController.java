@@ -8,13 +8,13 @@ import com.teamalgo.algo.dto.response.RecordListResponse;
 import com.teamalgo.algo.dto.response.RecordResponse;
 import com.teamalgo.algo.global.common.api.ApiResponse;
 import com.teamalgo.algo.global.common.code.SuccessCode;
+import com.teamalgo.algo.security.CustomUserDetails;
 import com.teamalgo.algo.service.record.RecordService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-
 
 @RestController
 @RequiredArgsConstructor
@@ -27,8 +27,9 @@ public class RecordController {
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<RecordResponse.Data>> getRecord(
             @PathVariable Long id,
-            @AuthenticationPrincipal User user
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
+        User user = userDetails.getUser();
         var record = recordService.getRecordById(id);
         var response = recordService.createRecordResponse(record, user);
         return ApiResponse.success(SuccessCode._OK, response);
@@ -45,22 +46,24 @@ public class RecordController {
     // 생성
     @PostMapping
     public ResponseEntity<ApiResponse<RecordResponse.Data>> createRecord(
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestBody RecordCreateRequest request
     ) {
+        User user = userDetails.getUser();
         var record = recordService.createRecord(user, request);
         var response = recordService.createRecordResponse(record, user);
         return ApiResponse.success(SuccessCode._CREATED, response);
     }
 
-    // 수정
-    @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<RecordResponse.Data>> patchRecord(
+    // 수정 (블로그 전체 교체)
+    @PutMapping("/{id}")
+    public ResponseEntity<ApiResponse<RecordResponse.Data>> updateRecord(
             @PathVariable Long id,
             @RequestBody RecordUpdateRequest request,
-            @AuthenticationPrincipal User user
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        var record = recordService.patchRecord(id, request,user);
+        User user = userDetails.getUser();
+        var record = recordService.updateRecord(id, request, user);
         var response = recordService.createRecordResponse(record, user);
         return ApiResponse.success(SuccessCode._OK, response);
     }
@@ -69,8 +72,9 @@ public class RecordController {
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> deleteRecord(
             @PathVariable Long id,
-            @AuthenticationPrincipal User user
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
+        User user = userDetails.getUser();
         recordService.deleteRecord(id, user);
         return ApiResponse.success(SuccessCode._OK, null);
     }

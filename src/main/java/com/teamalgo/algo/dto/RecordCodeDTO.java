@@ -36,12 +36,10 @@ public class RecordCodeDTO {
 
     public RecordCode toEntity(Record record) {
         return RecordCode.builder()
-                .id(id) // null이면 새로 생성됨
                 .record(record)
                 .language(language)
                 .code(code)
                 .verdict(verdict)
-                .snippetOrder(snippetOrder)
                 .build();
     }
 

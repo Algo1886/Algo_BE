@@ -20,8 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Service
 @RequiredArgsConstructor
@@ -30,13 +29,12 @@ public class RecordService {
 
     private final RecordRepository recordRepository;
     private final ProblemRepository problemRepository;
-
     private final CategoryRepository categoryRepository;
     private final BookmarkService bookmarkService;
+
     // 레코드 생성
     @Transactional
     public com.teamalgo.algo.domain.record.Record createRecord(User user, RecordCreateRequest req) {
-        // 1. 문제 찾거나 없으면 새로 생성
         Problem problem = problemRepository.findByUrl(req.getProblemUrl())
                 .orElseGet(() -> problemRepository.save(
                         Problem.builder()
@@ -47,7 +45,6 @@ public class RecordService {
                                 .build()
                 ));
 
-        // 2. Record 생성
         com.teamalgo.algo.domain.record.Record record = com.teamalgo.algo.domain.record.Record.builder()
                 .user(user)
                 .problem(problem)
@@ -58,15 +55,26 @@ public class RecordService {
                 .isPublished(req.isPublished())
                 .build();
 
-        // 3. Codes, Steps, Ideas, Links 저장
+        // Codes (항상 서버에서 snippetOrder 재지정)
         if (req.getCodes() != null) {
-            record.getCodes().addAll(req.getCodes().stream()
-                    .map(dto -> dto.toEntity(record)).toList());
+            AtomicInteger order = new AtomicInteger(0);
+            for (RecordCodeDTO dto : req.getCodes()) {
+                RecordCode entity = dto.toEntity(record);
+                entity.update(dto.getLanguage(), dto.getCode(), dto.getVerdict(), order.getAndIncrement());
+                record.getCodes().add(entity);
+            }
         }
+
+        // Steps (항상 서버에서 stepOrder 재지정)
         if (req.getSteps() != null) {
-            record.getSteps().addAll(req.getSteps().stream()
-                    .map(dto -> dto.toEntity(record)).toList());
+            AtomicInteger order = new AtomicInteger(0);
+            for (RecordStepDTO dto : req.getSteps()) {
+                RecordStep entity = dto.toEntity(record);
+                entity.update(order.getAndIncrement(), dto.getText());
+                record.getSteps().add(entity);
+            }
         }
+
         if (req.getIdeas() != null) {
             record.getIdeas().addAll(req.getIdeas().stream()
                     .map(dto -> dto.toEntity(record)).toList());
@@ -76,7 +84,6 @@ public class RecordService {
                     .map(dto -> dto.toEntity(record)).toList());
         }
 
-        // 카테고리 저장
         if (req.getCategories() != null) {
             List<RecordCategory> recordCategories = new HashSet<>(req.getCategories()).stream()
                     .map(catName -> {
@@ -87,7 +94,6 @@ public class RecordService {
                                                 .slug(catName.toLowerCase().replace(" ", "-"))
                                                 .build()
                                 ));
-
                         return RecordCategory.builder()
                                 .record(record)
                                 .category(category)
@@ -98,59 +104,122 @@ public class RecordService {
             record.getRecordCategories().addAll(recordCategories);
         }
 
-        // 5. DB 저장
         return recordRepository.save(record);
     }
 
     // 조회
     public com.teamalgo.algo.domain.record.Record getRecordById(Long id) {
-        return recordRepository.findWithDetailsById(id)
+        return recordRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Record not found: " + id));
     }
 
     public Page<com.teamalgo.algo.domain.record.Record> searchRecords(RecordSearchRequest req) {
         Sort sort = (req.getSort() == RecordSearchRequest.SortType.LATEST)
                 ? Sort.by(Sort.Direction.DESC, "createdAt")
-                : Sort.by(Sort.Direction.DESC, "id"); // POPULAR은 추후 구현
+                : Sort.by(Sort.Direction.DESC, "id");
 
         Pageable pageable = PageRequest.of(req.getPageIndex(), req.getSize(), sort);
 
         return recordRepository.findAll(pageable);
     }
 
-    // 레코드 수정
+    // 레코드 수정 (블로그 전체 교체 방식)
     @Transactional
-    public com.teamalgo.algo.domain.record.Record patchRecord(Long id, RecordUpdateRequest req, User user) {
+    public com.teamalgo.algo.domain.record.Record updateRecord(
+            Long id,
+            RecordUpdateRequest req,
+            User user
+    ) {
         com.teamalgo.algo.domain.record.Record record = getRecordById(id);
 
         if (!record.getUser().getId().equals(user.getId())) {
             throw new AccessDeniedException("권한이 없습니다.");
         }
 
-        record.applyPatch(req);
+        // --- 단일 필드 갱신 ---
+        record.updateDetail(req.getDetail());
+        if (req.getIsDraft() != null) record.updateDraft(req.getIsDraft());
+        if (req.getIsPublished() != null) record.updatePublished(req.getIsPublished());
 
+        // --- Codes 전체 교체 ---
+        if (req.getCodes() != null) {
+            record.getCodes().clear();
+            recordRepository.flush(); // ✅ DELETE 먼저 DB 반영
+            AtomicInteger order = new AtomicInteger(0);
+            for (RecordCodeDTO dto : req.getCodes()) {
+                RecordCode entity = dto.toEntity(record);
+                entity.update(dto.getLanguage(), dto.getCode(), dto.getVerdict(), order.getAndIncrement());
+                record.getCodes().add(entity);
+            }
+        }
 
-        if (req.getCodes() != null) syncCodes(record, req.getCodes());
-        if (req.getSteps() != null) syncSteps(record, req.getSteps());
-        if (req.getIdeas() != null) syncIdeas(record, req.getIdeas());
-        if (req.getLinks() != null) syncLinks(record, req.getLinks());
+        // --- Steps 전체 교체 ---
+        if (req.getSteps() != null) {
+            record.getSteps().clear();
+            recordRepository.flush(); // ✅ DELETE 먼저 DB 반영
+            AtomicInteger order = new AtomicInteger(0);
+            for (RecordStepDTO dto : req.getSteps()) {
+                RecordStep entity = dto.toEntity(record);
+                entity.update(order.getAndIncrement(), dto.getText());
+                record.getSteps().add(entity);
+            }
+        }
+
+        // --- Ideas 전체 교체 ---
+        if (req.getIdeas() != null) {
+            record.getIdeas().clear();
+            recordRepository.flush(); // ✅ DELETE 먼저 DB 반영
+            for (RecordCoreIdeaDTO dto : req.getIdeas()) {
+                record.getIdeas().add(dto.toEntity(record));
+            }
+        }
+
+        // --- Links 전체 교체 ---
+        if (req.getLinks() != null) {
+            record.getLinks().clear();
+            recordRepository.flush(); // ✅ DELETE 먼저 DB 반영
+            for (RecordLinkDTO dto : req.getLinks()) {
+                record.getLinks().add(dto.toEntity(record));
+            }
+        }
+
+        // --- Categories 전체 교체 ---
+        if (req.getCategories() != null) {
+            record.getRecordCategories().clear();
+            recordRepository.flush(); // ✅ DELETE 먼저 DB 반영
+            for (String catName : req.getCategories()) {
+                Category category = categoryRepository.findByName(catName)
+                        .orElseGet(() -> categoryRepository.save(
+                                Category.builder()
+                                        .name(catName)
+                                        .slug(catName.toLowerCase().replace(" ", "-"))
+                                        .build()
+                        ));
+                record.getRecordCategories().add(
+                        RecordCategory.builder()
+                                .record(record)
+                                .category(category)
+                                .build()
+                );
+            }
+        }
 
         return record;
     }
+
 
     // 레코드 삭제
     @Transactional
     public void deleteRecord(Long id, User user) {
         com.teamalgo.algo.domain.record.Record record = getRecordById(id);
 
-        // 소유자 검증
         if (!record.getUser().getId().equals(user.getId())) {
             throw new AccessDeniedException("권한이 없습니다.");
         }
         recordRepository.delete(record);
     }
 
-    // Response dto 변환
+    // Response DTO 변환
     public RecordResponse.Data createRecordResponse(com.teamalgo.algo.domain.record.Record record, User user) {
         return RecordResponse.Data.builder()
                 .id(record.getId())
@@ -180,7 +249,7 @@ public class RecordService {
 
         return RecordListResponse.Data.builder()
                 .records(recordDTOs)
-                .page(records.getNumber() + 1) // Page는 0-based라 +1
+                .page(records.getNumber() + 1)
                 .size(records.getSize())
                 .totalElements(records.getTotalElements())
                 .totalPages(records.getTotalPages())
@@ -189,89 +258,7 @@ public class RecordService {
                 .build();
     }
 
-
-    // 레코드의 자식 엔터티 (코드, 스텝, 핵심 아이디어, 링크) 동기화
-    private void syncCodes(com.teamalgo.algo.domain.record.Record record, List<RecordCodeDTO> dtos) {
-        Map<Long, RecordCode> current = record.getCodes().stream()
-                .filter(c -> c.getId() != null)
-                .collect(Collectors.toMap(RecordCode::getId, Function.identity()));
-
-        List<RecordCode> next = new ArrayList<>();
-        for (RecordCodeDTO dto : dtos) {
-            if (dto.getId() != null && current.containsKey(dto.getId())) {
-                RecordCode entity = current.get(dto.getId());
-                entity.update(dto.getLanguage(), dto.getCode(), dto.getVerdict(), dto.getSnippetOrder());
-                next.add(entity);
-            } else {
-                next.add(dto.toEntity(record));
-            }
-        }
-        record.getCodes().clear();
-        record.getCodes().addAll(next);
-    }
-
-
-    private void syncSteps(com.teamalgo.algo.domain.record.Record record, List<RecordStepDTO> dtos) {
-        Map<Long, RecordStep> current = record.getSteps().stream()
-                .filter(s -> s.getId() != null)
-                .collect(Collectors.toMap(RecordStep::getId, Function.identity()));
-
-        List<RecordStep> next = new ArrayList<>();
-        for (RecordStepDTO dto : dtos) {
-            if (dto.getId() != null && current.containsKey(dto.getId())) {
-                RecordStep entity = current.get(dto.getId());
-                entity.update(dto.getStepOrder(), dto.getText());
-                next.add(entity);
-            } else {
-                next.add(dto.toEntity(record));
-            }
-        }
-        record.getSteps().clear();
-        record.getSteps().addAll(next);
-    }
-
-
-    private void syncIdeas(com.teamalgo.algo.domain.record.Record record, List<RecordCoreIdeaDTO> dtos) {
-        Map<Long, RecordCoreIdea> current = record.getIdeas().stream()
-                .filter(i -> i.getId() != null)
-                .collect(Collectors.toMap(RecordCoreIdea::getId, Function.identity()));
-
-        List<RecordCoreIdea> next = new ArrayList<>();
-        for (RecordCoreIdeaDTO dto : dtos) {
-            if (dto.getId() != null && current.containsKey(dto.getId())) {
-                RecordCoreIdea entity = current.get(dto.getId());
-                entity.update(dto.getContent());
-                next.add(entity);
-            } else {
-                next.add(dto.toEntity(record));
-            }
-        }
-        record.getIdeas().clear();
-        record.getIdeas().addAll(next);
-    }
-
-
-    private void syncLinks(com.teamalgo.algo.domain.record.Record record, List<RecordLinkDTO> dtos) {
-        Map<Long, RecordLink> current = record.getLinks().stream()
-                .filter(l -> l.getId() != null)
-                .collect(Collectors.toMap(RecordLink::getId, Function.identity()));
-
-        List<RecordLink> next = new ArrayList<>();
-        for (RecordLinkDTO dto : dtos) {
-            if (dto.getId() != null && current.containsKey(dto.getId())) {
-                RecordLink entity = current.get(dto.getId());
-                entity.update(dto.getUrl());
-                next.add(entity);
-            } else {
-                next.add(dto.toEntity(record));
-            }
-        }
-        record.getLinks().clear();
-        record.getLinks().addAll(next);
-    }
-
-
-    // 매핑 헬퍼
+    // --- 매핑 헬퍼 ---
     private ProblemDTO mapProblem(Problem problem) {
         return ProblemDTO.builder()
                 .id(problem.getId())
@@ -289,6 +276,7 @@ public class RecordService {
                 .avatarUrl(user.getAvatarUrl())
                 .build();
     }
+
     private List<String> mapCategories(com.teamalgo.algo.domain.record.Record record) {
         return record.getRecordCategories().stream()
                 .map(rc -> rc.getCategory().getName())

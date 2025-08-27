@@ -16,7 +16,6 @@ public class RecordLinkDTO {
 
     public RecordLink toEntity(Record record) {
         return RecordLink.builder()
-                .id(id)
                 .record(record)
                 .url(url)
                 .build();
