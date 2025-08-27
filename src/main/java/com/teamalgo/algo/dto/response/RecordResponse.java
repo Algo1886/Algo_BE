@@ -33,10 +33,10 @@ public class RecordResponse {
 
         private AuthorDTO author;
 
-        private boolean isDraft;
-        private boolean isPublished;
-        private boolean isBookmarked;
-        private boolean isOwner; // 프론트에서 수정, 삭제 버튼 띄울 수 있게
+        private Boolean isDraft;
+        private Boolean isPublished;
+        private Boolean isBookmarked;
+        private Boolean isOwner;
 
         private LocalDateTime createdAt;
         private LocalDateTime updatedAt;

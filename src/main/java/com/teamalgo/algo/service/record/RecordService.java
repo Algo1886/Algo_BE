@@ -144,7 +144,7 @@ public class RecordService {
         // --- Codes 전체 교체 ---
         if (req.getCodes() != null) {
             record.getCodes().clear();
-            recordRepository.flush(); // ✅ DELETE 먼저 DB 반영
+            recordRepository.flush();
             AtomicInteger order = new AtomicInteger(0);
             for (RecordCodeDTO dto : req.getCodes()) {
                 RecordCode entity = dto.toEntity(record);
@@ -156,7 +156,7 @@ public class RecordService {
         // --- Steps 전체 교체 ---
         if (req.getSteps() != null) {
             record.getSteps().clear();
-            recordRepository.flush(); // ✅ DELETE 먼저 DB 반영
+            recordRepository.flush();
             AtomicInteger order = new AtomicInteger(0);
             for (RecordStepDTO dto : req.getSteps()) {
                 RecordStep entity = dto.toEntity(record);
@@ -168,7 +168,7 @@ public class RecordService {
         // --- Ideas 전체 교체 ---
         if (req.getIdeas() != null) {
             record.getIdeas().clear();
-            recordRepository.flush(); // ✅ DELETE 먼저 DB 반영
+            recordRepository.flush();
             for (RecordCoreIdeaDTO dto : req.getIdeas()) {
                 record.getIdeas().add(dto.toEntity(record));
             }
@@ -177,7 +177,7 @@ public class RecordService {
         // --- Links 전체 교체 ---
         if (req.getLinks() != null) {
             record.getLinks().clear();
-            recordRepository.flush(); // ✅ DELETE 먼저 DB 반영
+            recordRepository.flush();
             for (RecordLinkDTO dto : req.getLinks()) {
                 record.getLinks().add(dto.toEntity(record));
             }
@@ -186,7 +186,7 @@ public class RecordService {
         // --- Categories 전체 교체 ---
         if (req.getCategories() != null) {
             record.getRecordCategories().clear();
-            recordRepository.flush(); // ✅ DELETE 먼저 DB 반영
+            recordRepository.flush();
             for (String catName : req.getCategories()) {
                 Category category = categoryRepository.findByName(catName)
                         .orElseGet(() -> categoryRepository.save(

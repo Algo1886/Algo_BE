@@ -76,7 +76,7 @@ public class Record extends BaseEntity {
     @Column(name = "is_published", nullable = false)
     private boolean isPublished;
 
-    // --- 도메인 메서드 (DDD 스타일) ---
+    // --- 도메인 메서드 ---
     public void updateDetail(String detail) {
         this.detail = detail;
     }
