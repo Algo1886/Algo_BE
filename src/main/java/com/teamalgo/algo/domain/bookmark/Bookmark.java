@@ -2,6 +2,7 @@ package com.teamalgo.algo.domain.bookmark;
 
 import com.teamalgo.algo.domain.record.Record;
 import com.teamalgo.algo.domain.user.User;
+import com.teamalgo.algo.global.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -14,7 +15,7 @@ import lombok.*;
         name = "bookmark",
         uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "record_id"})
 )
-public class Bookmark {
+public class Bookmark extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -4,19 +4,17 @@ import com.teamalgo.algo.domain.stats.StatsDaily;
 import com.teamalgo.algo.domain.user.User;
 import com.teamalgo.algo.dto.StreakRecordDTO;
 import com.teamalgo.algo.dto.response.StreakCalendarResponse;
+import com.teamalgo.algo.dto.response.UserStatsResponse;
 import com.teamalgo.algo.global.common.code.ErrorCode;
 import com.teamalgo.algo.global.exception.CustomException;
-import com.teamalgo.algo.repository.StatsDailyRepository;
-import com.teamalgo.algo.repository.UserRepository;
+import com.teamalgo.algo.repository.*;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -25,6 +23,9 @@ public class StatsService {
 
     private final UserRepository userRepository;
     private final StatsDailyRepository statsDailyRepository;
+    private final BookmarkRepository bookmarkRepository;
+    private final RecordCoreIdeaRepository recordCoreIdeaRepository;
+    private final RecordCategoryRepository recordCategoryRepository;
 
     @Transactional
     public void updateStats(User user, boolean isSuccess) {
@@ -90,6 +91,80 @@ public class StatsService {
         int totalCount = streaks.stream().mapToInt(StreakRecordDTO::getCount).sum();
 
         return new StreakCalendarResponse(userId, start, end, streaks, totalCount);
+    }
+
+    public UserStatsResponse getUserStats(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+        LocalDate today = LocalDate.now();
+        LocalDate startOfWeek = today.minusDays(6);
+
+        // records 통계
+        Long totalRecords = Optional.ofNullable(statsDailyRepository.getTotalRecords(user)).orElse(0L);
+        Long thisWeekRecords = Optional.ofNullable(statsDailyRepository.getThisWeekRecords(user, startOfWeek)).orElse(0L);
+
+        Object result = statsDailyRepository.getSuccessAndFail(user);
+        Object[] row = (Object[]) result;
+
+        Long successCount = row[0] != null ? ((Number) row[0]).longValue() : 0L;
+        Long failCount   = row[1] != null ? ((Number) row[1]).longValue() : 0L;
+
+        Double successRate = (successCount + failCount) > 0
+                ? (successCount * 100.0 / (successCount + failCount))
+                : 0.0;
+
+        // bookmarks
+        Long totalBookmarks = bookmarkRepository.countByUser(user);
+        Long thisWeekBookmarks = bookmarkRepository.countThisWeekByUser(user, startOfWeek.atStartOfDay());
+
+        // ideas
+        Long totalIdeas = recordCoreIdeaRepository.countByUser(user);
+        List<Object[]> topIdeaCategoryResult = recordCoreIdeaRepository.findTopCategoryByUser(user, PageRequest.of(0, 1));
+
+        UserStatsResponse.Ideas.TopCategory topCategoryDTO = null;
+        if (!topIdeaCategoryResult.isEmpty()) {
+            Object[] ideaRow = topIdeaCategoryResult.get(0);
+            String name = (String) ideaRow[0];
+            Long count = ((Number) ideaRow[1]).longValue();
+            Double ratio = totalIdeas > 0 ? (count * 100.0 / totalIdeas) : 0.0;
+
+            topCategoryDTO = UserStatsResponse.Ideas.TopCategory.builder()
+                    .name(name)
+                    .ratio(ratio)
+                    .build();
+        }
+
+        // categories
+        List<Object[]> mostSolvedCategoryResult = recordCategoryRepository.findMostSolvedByUser(user, PageRequest.of(0, 1));
+        UserStatsResponse.Categories.MostSolvedCategory mostSolvedCategoryDTO = null;
+        if (!mostSolvedCategoryResult.isEmpty()) {
+            Object[] categoryRow = mostSolvedCategoryResult.get(0);
+            String name = (String) categoryRow[0];
+            Long count = ((Number) categoryRow[1]).longValue();
+            Double ratio = totalRecords > 0 ? (count * 100.0 / totalRecords) : 0.0;
+
+            mostSolvedCategoryDTO = UserStatsResponse.Categories.MostSolvedCategory.builder()
+                    .name(name)
+                    .count(count)
+                    .ratio(ratio)
+                    .build();
+        }
+
+        return UserStatsResponse.of(
+                user,
+                user.getCurrentStreak(),
+                user.getMaxStreak(),
+                totalRecords,
+                thisWeekRecords,
+                successCount,
+                successRate,
+                totalBookmarks,
+                thisWeekBookmarks,
+                totalIdeas,
+                topCategoryDTO,
+                mostSolvedCategoryDTO
+        );
     }
 
 }
