@@ -3,6 +3,7 @@ package com.teamalgo.algo.service.record;
 import com.teamalgo.algo.dto.CoreIdeaDTO;
 import com.teamalgo.algo.repository.RecordCoreIdeaRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,6 +18,13 @@ public class CoreIdeaService {
 
     public List<CoreIdeaDTO> getUserIdeas(Long userId) {
         return recordCoreIdeaRepository.findByRecordUserId(userId)
+                .stream()
+                .map(CoreIdeaDTO::fromEntity)
+                .toList();
+    }
+
+    public List<CoreIdeaDTO> getRecentIdeas(Long userId, int limit) {
+        return recordCoreIdeaRepository.findByRecordUserIdOrderByRecordCreatedAtDesc(userId, PageRequest.of(0, limit))
                 .stream()
                 .map(CoreIdeaDTO::fromEntity)
                 .toList();
