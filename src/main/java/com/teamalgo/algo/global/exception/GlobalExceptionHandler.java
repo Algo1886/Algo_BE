@@ -19,7 +19,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Object>> handleException(Exception e) {
-        log.error("Exception occurred: {}", e.getMessage());
+        log.error("Exception occurred", e);
         ErrorCode errorCode = ErrorCode.INTERNAL_SERVER_ERROR;
         return ApiResponse.fail(errorCode);
     }

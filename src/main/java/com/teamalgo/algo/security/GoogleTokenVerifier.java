@@ -8,11 +8,13 @@ import com.google.api.client.json.gson.GsonFactory;
 
 import com.teamalgo.algo.global.common.code.ErrorCode;
 import com.teamalgo.algo.global.exception.CustomException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.Collections;
 
+@Slf4j
 @Component
 public class GoogleTokenVerifier {
 
@@ -33,6 +35,7 @@ public class GoogleTokenVerifier {
             return (googleIdToken != null) ? googleIdToken.getPayload() : null;
 
         } catch (Exception e) {
+            log.error("Unexpected error while verifying Google token", e);
             throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
         }
     }
