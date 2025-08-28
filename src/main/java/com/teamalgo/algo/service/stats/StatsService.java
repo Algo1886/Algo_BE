@@ -3,6 +3,7 @@ package com.teamalgo.algo.service.stats;
 import com.teamalgo.algo.domain.stats.StatsDaily;
 import com.teamalgo.algo.domain.user.User;
 import com.teamalgo.algo.dto.StreakRecordDTO;
+import com.teamalgo.algo.dto.response.DashboardResponse;
 import com.teamalgo.algo.dto.response.StreakCalendarResponse;
 import com.teamalgo.algo.dto.response.UserStatsResponse;
 import com.teamalgo.algo.global.common.code.ErrorCode;
@@ -27,6 +28,7 @@ public class StatsService {
     private final RecordCoreIdeaRepository recordCoreIdeaRepository;
     private final RecordCategoryRepository recordCategoryRepository;
 
+    // 스트릭 기록
     @Transactional
     public void updateStats(User user, boolean isSuccess) {
         LocalDate today = LocalDate.now();
@@ -64,6 +66,7 @@ public class StatsService {
         userRepository.save(user);
     }
 
+    // 1년 스트릭 조회
     @Transactional
     public StreakCalendarResponse getYearlyStreak(Long userId) {
         LocalDate end = LocalDate.now();
@@ -93,6 +96,7 @@ public class StatsService {
         return new StreakCalendarResponse(userId, start, end, streaks, totalCount);
     }
 
+    // 사용자 통계 조회
     public UserStatsResponse getUserStats(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
@@ -165,6 +169,35 @@ public class StatsService {
                 topCategoryDTO,
                 mostSolvedCategoryDTO
         );
+    }
+
+    // 사용자 대시보드 조회
+    public DashboardResponse getDashboard(User user) {
+        Long recordCount = Optional.ofNullable(statsDailyRepository.getTotalRecords(user)).orElse(0L);
+
+        Object result = statsDailyRepository.getSuccessAndFail(user);
+        Object[] row = (Object[]) result;
+        Long successCount = row[0] != null ? ((Number) row[0]).longValue() : 0L;
+        Long failCount   = row[1] != null ? ((Number) row[1]).longValue() : 0L;
+
+        double successRate = (successCount + failCount) > 0
+                ? (successCount * 100.0 / (successCount + failCount))
+                : 0.0;
+
+        int streakDays = user.getCurrentStreak();
+
+        Long bookmarkCount = bookmarkRepository.countByUser(user);
+
+
+
+        return DashboardResponse.builder()
+                .recordCount(recordCount.intValue())
+                .streakDays(streakDays)
+                .successRate(successRate)
+                .bookmarkCount(bookmarkCount.intValue())
+                .recommendations(Collections.emptyList())
+                .recentIdeas(Collections.emptyList())
+                .build();
     }
 
 }
