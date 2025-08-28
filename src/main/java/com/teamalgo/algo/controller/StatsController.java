@@ -14,6 +14,7 @@ import com.teamalgo.algo.service.record.ReviewService;
 import com.teamalgo.algo.service.stats.StatsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -45,6 +46,22 @@ public class StatsController {
                 .recentIdeas(recentIdeas)
                 .build();
 
+        return ApiResponse.success(SuccessCode._OK, response);
+    }
+
+    // 스트릭 조회
+    @GetMapping("/streak")
+    public ResponseEntity<ApiResponse<StreakCalendarResponse>> getStreak(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        Long userId = userDetails.getUser().getId();
+        StreakCalendarResponse response = statsService.getYearlyStreak(userId);
+        return ApiResponse.success(SuccessCode._OK, response);
+    }
+
+    // 사용자 통계 조회
+    @GetMapping("/stats")
+    public ResponseEntity<ApiResponse<UserStatsResponse>> getStats (@AuthenticationPrincipal CustomUserDetails userDetails) {
+        Long userId = userDetails.getUser().getId();
+        UserStatsResponse response = statsService.getUserStats(userId);
         return ApiResponse.success(SuccessCode._OK, response);
     }
 }
