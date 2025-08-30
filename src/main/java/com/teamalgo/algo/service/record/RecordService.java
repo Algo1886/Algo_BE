@@ -22,7 +22,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -137,6 +136,16 @@ public class RecordService {
         Pageable pageable = PageRequest.of(req.getPageIndex(), req.getSize(), sort);
 
         return recordRepository.findAll(pageable);
+    }
+
+    // 내 레코드 목록 조회
+    public Page<com.teamalgo.algo.domain.record.Record> getRecordsByUser(User user, Pageable pageable) {
+        return recordRepository.findByUserId(user.getId(), pageable);
+    }
+
+    // Draft 목록 조회
+    public Page<com.teamalgo.algo.domain.record.Record> getDraftsByUser(User user, Pageable pageable) {
+        return recordRepository.findByUserIdAndIsDraftTrue(user.getId(), pageable);
     }
 
     // 레코드 수정
@@ -272,6 +281,7 @@ public class RecordService {
                 .last(records.isLast())
                 .build();
     }
+
 
     // --- 매핑 헬퍼 ---
     private ProblemDTO mapProblem(Problem problem) {
