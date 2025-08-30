@@ -2,6 +2,7 @@ package com.teamalgo.algo.controller;
 
 import com.teamalgo.algo.domain.user.User;
 import com.teamalgo.algo.dto.RecordDTO;
+import com.teamalgo.algo.dto.response.BookmarkListResponse;
 import com.teamalgo.algo.global.common.api.ApiResponse;
 import com.teamalgo.algo.global.common.code.SuccessCode;
 import com.teamalgo.algo.security.CustomUserDetails;
@@ -13,8 +14,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
 
-import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -52,13 +55,18 @@ public class BookmarkController {
 
     // 북마크 목록 조회
     @GetMapping
-    public ResponseEntity<ApiResponse<List<RecordDTO>>> getBookmarks(
-            @AuthenticationPrincipal CustomUserDetails userDetails
+    public ResponseEntity<ApiResponse<BookmarkListResponse>> getMyBookmarks(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
     ) {
-        User user = userService.findById(userDetails.getUser().getId())
-                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+        User user = userDetails.getUser();
 
-        var response = bookmarkService.getBookmarkedRecords(user);
+        Page<RecordDTO> bookmarks = bookmarkService.getBookmarkedRecords(user, PageRequest.of(page, size));
+        BookmarkListResponse response = BookmarkListResponse.fromPage(bookmarks);
+
         return ApiResponse.success(SuccessCode._OK, response);
     }
+
+
 }
