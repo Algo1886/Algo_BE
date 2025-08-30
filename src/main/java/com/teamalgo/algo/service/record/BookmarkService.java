@@ -11,8 +11,8 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 @Service
 @RequiredArgsConstructor
@@ -53,10 +53,8 @@ public class BookmarkService {
     }
 
     // 북마크한 레코드 목록 조회
-    public List<RecordDTO> getBookmarkedRecords(User user) {
-        return bookmarkRepository.findByUser(user).stream()
-                .map(Bookmark::getRecord)
-                .map(RecordDTO::from)
-                .toList();
+    public Page<RecordDTO> getBookmarkedRecords(User user, Pageable pageable) {
+        return bookmarkRepository.findByUser(user, pageable)
+                .map(bookmark -> RecordDTO.from(bookmark.getRecord()));
     }
 }

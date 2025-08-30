@@ -11,8 +11,8 @@ import com.teamalgo.algo.dto.request.RecordUpdateRequest;
 import com.teamalgo.algo.dto.response.RecordListResponse;
 import com.teamalgo.algo.dto.response.RecordResponse;
 import com.teamalgo.algo.repository.*;
-
 import com.teamalgo.algo.service.stats.StatsService;
+import com.teamalgo.algo.global.common.util.ProblemSourceDetector;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
@@ -38,14 +38,20 @@ public class RecordService {
     @Transactional
     public com.teamalgo.algo.domain.record.Record createRecord(User user, RecordCreateRequest req) {
         Problem problem = problemRepository.findByUrl(req.getProblemUrl())
-                .orElseGet(() -> problemRepository.save(
-                        Problem.builder()
-                                .url(req.getProblemUrl())
-                                .title(req.getTitle())
-                                .source(req.getSource())
-                                .externalId(UUID.randomUUID().toString())
-                                .build()
-                ));
+                .orElseGet(() -> {
+                    // URL → source, externalId 자동 매핑
+                    String source = ProblemSourceDetector.detectSource(req.getProblemUrl());
+                    String externalId = ProblemSourceDetector.extractExternalId(req.getProblemUrl(), source);
+
+                    return problemRepository.save(
+                            Problem.builder()
+                                    .url(req.getProblemUrl())
+                                    .title(req.getTitle())
+                                    .source(source)
+                                    .externalId(externalId)
+                                    .build()
+                    );
+                });
 
         com.teamalgo.algo.domain.record.Record record = com.teamalgo.algo.domain.record.Record.builder()
                 .user(user)
@@ -57,7 +63,7 @@ public class RecordService {
                 .isPublished(req.isPublished())
                 .build();
 
-        // Codes (항상 서버에서 snippetOrder 재지정)
+        // Codes
         if (req.getCodes() != null) {
             AtomicInteger order = new AtomicInteger(0);
             for (RecordCodeDTO dto : req.getCodes()) {
@@ -67,7 +73,7 @@ public class RecordService {
             }
         }
 
-        // Steps (항상 서버에서 stepOrder 재지정)
+        // Steps
         if (req.getSteps() != null) {
             AtomicInteger order = new AtomicInteger(0);
             for (RecordStepDTO dto : req.getSteps()) {
@@ -79,11 +85,13 @@ public class RecordService {
 
         if (req.getIdeas() != null) {
             record.getIdeas().addAll(req.getIdeas().stream()
-                    .map(dto -> dto.toEntity(record)).toList());
+                    .map(dto -> dto.toEntity(record))
+                    .toList());
         }
         if (req.getLinks() != null) {
             record.getLinks().addAll(req.getLinks().stream()
-                    .map(dto -> dto.toEntity(record)).toList());
+                    .map(dto -> dto.toEntity(record))
+                    .toList());
         }
 
         if (req.getCategories() != null) {
@@ -106,19 +114,20 @@ public class RecordService {
             record.getRecordCategories().addAll(recordCategories);
         }
 
-        // 스트릭 기록
-        Boolean isSuccess = record.getStatus().equals("success");
+        //  성공/실패 기록 반영
+        boolean isSuccess = record.getStatus().equals("success");
         statsService.updateStats(user, isSuccess);
 
         return recordRepository.save(record);
     }
 
-    // 조회
+    // 레코드 단건 조회
     public com.teamalgo.algo.domain.record.Record getRecordById(Long id) {
         return recordRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Record not found: " + id));
     }
 
+    // 레코드 목록 조회
     public Page<com.teamalgo.algo.domain.record.Record> searchRecords(RecordSearchRequest req) {
         Sort sort = (req.getSort() == RecordSearchRequest.SortType.LATEST)
                 ? Sort.by(Sort.Direction.DESC, "createdAt")
@@ -129,7 +138,17 @@ public class RecordService {
         return recordRepository.findAll(pageable);
     }
 
-    // 레코드 수정 (블로그 전체 교체 방식)
+    // 내 레코드 목록 조회
+    public Page<com.teamalgo.algo.domain.record.Record> getRecordsByUser(User user, Pageable pageable) {
+        return recordRepository.findByUserId(user.getId(), pageable);
+    }
+
+    // Draft 목록 조회
+    public Page<com.teamalgo.algo.domain.record.Record> getDraftsByUser(User user, Pageable pageable) {
+        return recordRepository.findByUserIdAndIsDraftTrue(user.getId(), pageable);
+    }
+
+    // 레코드 수정
     @Transactional
     public com.teamalgo.algo.domain.record.Record updateRecord(
             Long id,
@@ -142,12 +161,12 @@ public class RecordService {
             throw new AccessDeniedException("권한이 없습니다.");
         }
 
-        // --- 단일 필드 갱신 ---
+        // 단일 필드 업데이트
         record.updateDetail(req.getDetail());
         if (req.getIsDraft() != null) record.updateDraft(req.getIsDraft());
         if (req.getIsPublished() != null) record.updatePublished(req.getIsPublished());
 
-        // --- Codes 전체 교체 ---
+        // Codes 교체
         if (req.getCodes() != null) {
             record.getCodes().clear();
             recordRepository.flush();
@@ -159,7 +178,7 @@ public class RecordService {
             }
         }
 
-        // --- Steps 전체 교체 ---
+        // Steps 교체
         if (req.getSteps() != null) {
             record.getSteps().clear();
             recordRepository.flush();
@@ -171,7 +190,7 @@ public class RecordService {
             }
         }
 
-        // --- Ideas 전체 교체 ---
+        // Ideas 교체
         if (req.getIdeas() != null) {
             record.getIdeas().clear();
             recordRepository.flush();
@@ -180,7 +199,7 @@ public class RecordService {
             }
         }
 
-        // --- Links 전체 교체 ---
+        // Links 교체
         if (req.getLinks() != null) {
             record.getLinks().clear();
             recordRepository.flush();
@@ -189,7 +208,7 @@ public class RecordService {
             }
         }
 
-        // --- Categories 전체 교체 ---
+        // Categories 교체
         if (req.getCategories() != null) {
             record.getRecordCategories().clear();
             recordRepository.flush();
@@ -212,7 +231,6 @@ public class RecordService {
 
         return record;
     }
-
 
     // 레코드 삭제
     @Transactional
@@ -263,6 +281,7 @@ public class RecordService {
                 .last(records.isLast())
                 .build();
     }
+
 
     // --- 매핑 헬퍼 ---
     private ProblemDTO mapProblem(Problem problem) {

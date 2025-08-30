@@ -6,7 +6,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import java.util.List;
 
 @Service
@@ -16,18 +17,18 @@ public class CoreIdeaService {
 
     private final RecordCoreIdeaRepository recordCoreIdeaRepository;
 
-    public List<CoreIdeaDTO> getUserIdeas(Long userId) {
-        return recordCoreIdeaRepository.findByRecordUserId(userId)
+    public Page<CoreIdeaDTO> getUserIdeas(Long userId, Pageable pageable) {
+        return recordCoreIdeaRepository.findByRecordUserId(userId, pageable)
+                .map(CoreIdeaDTO::fromEntity);
+    }
+
+    public List<CoreIdeaDTO> getRecentIdeas(Long userId, int limit) {
+        Pageable pageable = PageRequest.of(0, limit);
+        return recordCoreIdeaRepository.findByRecordUserIdOrderByRecordCreatedAtDesc(userId, pageable)
                 .stream()
                 .map(CoreIdeaDTO::fromEntity)
                 .toList();
     }
 
-    public List<CoreIdeaDTO> getRecentIdeas(Long userId, int limit) {
-        return recordCoreIdeaRepository.findByRecordUserIdOrderByRecordCreatedAtDesc(userId, PageRequest.of(0, limit))
-                .stream()
-                .map(CoreIdeaDTO::fromEntity)
-                .toList();
-    }
 }
 
