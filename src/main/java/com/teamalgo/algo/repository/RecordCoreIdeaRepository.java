@@ -6,16 +6,17 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import java.util.List;
 
 public interface RecordCoreIdeaRepository extends JpaRepository<RecordCoreIdea, Long> {
 
-    // 특정 유저의 레코드에서 나온 아이디어만 조회
-    List<RecordCoreIdea> findByRecordUserId(Long userId);
+    // 특정 유저의 레코드에서 나온 아이디어 페이지네이션 조회
+    Page<RecordCoreIdea> findByRecordUserId(Long userId, Pageable pageable);
 
-    // 최신순 조회
-    List<RecordCoreIdea> findByRecordUserIdOrderByRecordCreatedAtDesc(Long userId, Pageable pageable);
+    // 최신순 페이지네이션 조회
+    Page<RecordCoreIdea> findByRecordUserIdOrderByRecordCreatedAtDesc(Long userId, Pageable pageable);
 
     @Query("""
         SELECT c.name, COUNT(idea.id) as ideaCount

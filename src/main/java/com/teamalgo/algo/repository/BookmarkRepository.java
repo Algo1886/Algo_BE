@@ -6,7 +6,8 @@ import com.teamalgo.algo.domain.user.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -17,6 +18,8 @@ public interface BookmarkRepository extends JpaRepository<Bookmark, Long> {
     // 북마크 엔터티 가져와서 삭제할 때
     Optional<Bookmark> findByUserAndRecord(User user, Record record);
     // RecordDTO 형태로 북마크 목록 반환
+
+    Page<Bookmark> findByUser(User user, Pageable pageable);
     List<Bookmark> findByUser(User user);
     // 사용자 별 전체 북마크 수
     Long countByUser(User user);

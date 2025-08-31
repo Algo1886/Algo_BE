@@ -19,9 +19,6 @@ public class RecordCreateRequest {
     @NotBlank(message = "Problem URL cannot be blank")
     private String problemUrl;
 
-    @NotNull(message = "Problem source cannot be null")
-    private String source;
-
     @NotBlank(message = "Problem title cannot be blank")
     private String title;
 
@@ -37,7 +34,7 @@ public class RecordCreateRequest {
     private int difficulty;
 
     @Size(max = 500, message = "Detail should not exceed 500 characters")
-    private String detail;      // 풀이 상세 설명
+    private String detail;
 
     private List<RecordCodeDTO> codes;
     private List<RecordStepDTO> steps;
