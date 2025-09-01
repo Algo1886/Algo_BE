@@ -1,15 +1,14 @@
 package com.teamalgo.algo.dto;
+
 import lombok.Builder;
 import lombok.Getter;
-import lombok.Setter;
 
 @Getter
-@Setter
 @Builder
 public class ProblemDTO {
-    private Long id;        // 문제 ID
-    private String source;  // 문제 출처 (boj, leetcode 등)
-    private String externalId; // 출처 내 문제 식별자
-    private String url;     // 문제 URL
-    private String title;   // 문제 제목
+    private Long id;          // DB PK
+    private String source;    // 문제 출처 (백준, 리트코드 등)
+    private String displayId; // 숫자 기반 문제 번호 있으면 채움, slug 기반이면 null
+    private String url;       // 문제 URL
+    private String title;     // 문제 제목
 }

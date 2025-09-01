@@ -21,11 +21,11 @@ import com.teamalgo.algo.domain.record.Record;
 public class RecordCodeDTO {
     private Long id; // Create 시 null, Update/Response 시 존재
 
-    @NotNull(message = "Language cannot be null")
-    private String language;
-
     @NotNull(message = "Code cannot be null")
     private String code;
+
+    @NotNull(message = "Language cannot be null")
+    private String language;
 
     @NotNull(message = "Verdict cannot be null")
     @Pattern(regexp = "pass|fail", message = "Verdict must be 'pass' or 'fail'")

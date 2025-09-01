@@ -33,7 +33,7 @@ public class RecordCreateRequest {
     @Max(value = 5, message = "Difficulty must be between 1 and 5")
     private int difficulty;
 
-    @Size(max = 500, message = "Detail should not exceed 500 characters")
+    @Size(max = 2000, message = "Detail should not exceed 2000 characters")
     private String detail;
 
     private List<RecordCodeDTO> codes;
