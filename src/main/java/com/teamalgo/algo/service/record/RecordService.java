@@ -14,12 +14,15 @@ import com.teamalgo.algo.repository.*;
 import com.teamalgo.algo.service.stats.StatsService;
 import com.teamalgo.algo.global.common.util.ProblemSourceDetector;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.persistence.criteria.Join;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -39,18 +42,20 @@ public class RecordService {
     public com.teamalgo.algo.domain.record.Record createRecord(User user, RecordCreateRequest req) {
         Problem problem = problemRepository.findByUrl(req.getProblemUrl())
                 .orElseGet(() -> {
-                    // URL → source, externalId 자동 매핑
                     String source = ProblemSourceDetector.detectSource(req.getProblemUrl());
-                    String externalId = ProblemSourceDetector.extractExternalId(req.getProblemUrl(), source);
 
-                    return problemRepository.save(
-                            Problem.builder()
-                                    .url(req.getProblemUrl())
-                                    .title(req.getTitle())
-                                    .source(source)
-                                    .externalId(externalId)
-                                    .build()
-                    );
+                    Problem.ProblemBuilder builder = Problem.builder()
+                            .url(req.getProblemUrl())
+                            .title(req.getTitle())
+                            .source(source);
+
+                    Long numericId = ProblemSourceDetector.extractNumericId(req.getProblemUrl(), source);
+                    String slugId = ProblemSourceDetector.extractSlugId(req.getProblemUrl(), source);
+
+                    if (numericId != null) builder.numericId(numericId);
+                    if (slugId != null) builder.slugId(slugId);
+
+                    return problemRepository.save(builder.build());
                 });
 
         com.teamalgo.algo.domain.record.Record record = com.teamalgo.algo.domain.record.Record.builder()
@@ -83,17 +88,21 @@ public class RecordService {
             }
         }
 
+        // Ideas
         if (req.getIdeas() != null) {
             record.getIdeas().addAll(req.getIdeas().stream()
                     .map(dto -> dto.toEntity(record))
                     .toList());
         }
+
+        // Links
         if (req.getLinks() != null) {
             record.getLinks().addAll(req.getLinks().stream()
                     .map(dto -> dto.toEntity(record))
                     .toList());
         }
 
+        // Categories
         if (req.getCategories() != null) {
             List<RecordCategory> recordCategories = new HashSet<>(req.getCategories()).stream()
                     .map(catName -> {
@@ -114,7 +123,6 @@ public class RecordService {
             record.getRecordCategories().addAll(recordCategories);
         }
 
-        //  성공/실패 기록 반영
         boolean isSuccess = record.getStatus().equals("success");
         statsService.updateStats(user, isSuccess);
 
@@ -134,8 +142,38 @@ public class RecordService {
                 : Sort.by(Sort.Direction.DESC, "id");
 
         Pageable pageable = PageRequest.of(req.getPageIndex(), req.getSize(), sort);
+        Specification<com.teamalgo.algo.domain.record.Record> spec = Specification.where(null);
 
-        return recordRepository.findAll(pageable);
+        if (req.getSearch() != null && !req.getSearch().isBlank()) {
+            spec = spec.and((root, query, cb) -> {
+                Join<com.teamalgo.algo.domain.record.Record, Problem> problem = root.join("problem");
+                return cb.like(problem.get("title"), "%" + req.getSearch() + "%");
+            });
+        }
+
+        if (req.getAuthor() != null && !req.getAuthor().isBlank()) {
+            spec = spec.and((root, query, cb) -> {
+                Join<com.teamalgo.algo.domain.record.Record, User> user = root.join("user");
+                return cb.equal(user.get("username"), req.getAuthor());
+            });
+        }
+
+        if (req.getCategory() != null && !req.getCategory().isBlank()) {
+            spec = spec.and((root, query, cb) -> {
+                Join<com.teamalgo.algo.domain.record.Record, com.teamalgo.algo.domain.category.RecordCategory> rc = root.join("recordCategories");
+                Join<com.teamalgo.algo.domain.category.RecordCategory, com.teamalgo.algo.domain.category.Category> category = rc.join("category");
+                return cb.equal(category.get("name"), req.getCategory());
+            });
+        }
+
+        if (req.getStartDate() != null && req.getEndDate() != null) {
+            LocalDateTime start = req.getStartDate().atStartOfDay();
+            LocalDateTime end = req.getEndDate().plusDays(1).atStartOfDay();
+            spec = spec.and((root, query, cb) ->
+                    cb.between(root.get("createdAt"), start, end.minusNanos(1)));
+        }
+
+        return recordRepository.findAll(spec, pageable);
     }
 
     // 내 레코드 목록 조회
@@ -150,23 +188,17 @@ public class RecordService {
 
     // 레코드 수정
     @Transactional
-    public com.teamalgo.algo.domain.record.Record updateRecord(
-            Long id,
-            RecordUpdateRequest req,
-            User user
-    ) {
+    public com.teamalgo.algo.domain.record.Record updateRecord(Long id, RecordUpdateRequest req, User user) {
         com.teamalgo.algo.domain.record.Record record = getRecordById(id);
 
         if (!record.getUser().getId().equals(user.getId())) {
             throw new AccessDeniedException("권한이 없습니다.");
         }
 
-        // 단일 필드 업데이트
         record.updateDetail(req.getDetail());
         if (req.getIsDraft() != null) record.updateDraft(req.getIsDraft());
         if (req.getIsPublished() != null) record.updatePublished(req.getIsPublished());
 
-        // Codes 교체
         if (req.getCodes() != null) {
             record.getCodes().clear();
             recordRepository.flush();
@@ -178,7 +210,6 @@ public class RecordService {
             }
         }
 
-        // Steps 교체
         if (req.getSteps() != null) {
             record.getSteps().clear();
             recordRepository.flush();
@@ -190,7 +221,6 @@ public class RecordService {
             }
         }
 
-        // Ideas 교체
         if (req.getIdeas() != null) {
             record.getIdeas().clear();
             recordRepository.flush();
@@ -199,7 +229,6 @@ public class RecordService {
             }
         }
 
-        // Links 교체
         if (req.getLinks() != null) {
             record.getLinks().clear();
             recordRepository.flush();
@@ -208,7 +237,6 @@ public class RecordService {
             }
         }
 
-        // Categories 교체
         if (req.getCategories() != null) {
             record.getRecordCategories().clear();
             recordRepository.flush();
@@ -221,7 +249,7 @@ public class RecordService {
                                         .build()
                         ));
                 record.getRecordCategories().add(
-                        RecordCategory.builder()
+                        com.teamalgo.algo.domain.category.RecordCategory.builder()
                                 .record(record)
                                 .category(category)
                                 .build()
@@ -282,15 +310,13 @@ public class RecordService {
                 .build();
     }
 
-
-    // --- 매핑 헬퍼 ---
     private ProblemDTO mapProblem(Problem problem) {
         return ProblemDTO.builder()
                 .id(problem.getId())
                 .title(problem.getTitle())
                 .url(problem.getUrl())
                 .source(problem.getSource())
-                .externalId(problem.getExternalId())
+                .displayId(problem.getDisplayId()) // slug 기반이면 null
                 .build();
     }
 

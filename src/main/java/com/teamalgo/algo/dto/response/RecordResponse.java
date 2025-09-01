@@ -4,7 +4,7 @@ import com.teamalgo.algo.dto.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-
+import com.fasterxml.jackson.annotation.JsonFormat;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -38,7 +38,10 @@ public class RecordResponse {
         private Boolean isBookmarked;
         private Boolean isOwner;
 
+        @JsonFormat(pattern = "yyyy.MM.dd HH:mm")
         private LocalDateTime createdAt;
+
+        @JsonFormat(pattern = "yyyy.MM.dd HH:mm")
         private LocalDateTime updatedAt;
     }
 }

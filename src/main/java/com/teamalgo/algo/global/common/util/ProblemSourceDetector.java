@@ -8,52 +8,74 @@ import java.util.regex.Pattern;
 public class ProblemSourceDetector {
 
     public static String detectSource(String url) {
-        if (url.contains("acmicpc.net")) return "boj";
-        if (url.contains("programmers.co.kr")) return "programmers";
-        if (url.contains("leetcode.com")) return "leetcode";
-        if (url.contains("codeforces.com")) return "codeforces";
+        if (url.contains("acmicpc.net")) return "백준";
+        if (url.contains("programmers.co.kr")) return "프로그래머스";
+        if (url.contains("codeup.kr")) return "코드업";
+        if (url.contains("codeforces.com")) return "코드포스";
+        if (url.contains("swexpertacademy.com")) return "SW Expert Academy";
+        if (url.contains("leetcode.com")) return "리트코드";
         return "unknown";
     }
 
-    public static String extractExternalId(String url, String source) {
+    public static Long extractNumericId(String url, String source) {
         try {
             URI uri = new URI(url);
 
             switch (source) {
-                case "boj": {
-                    // https://www.acmicpc.net/problem/1000
-                    Pattern pattern = Pattern.compile("/problem/(\\d+)");
-                    Matcher matcher = pattern.matcher(uri.getPath());
-                    if (matcher.find()) return matcher.group(1);
+                case "백준": {
+                    Pattern p = Pattern.compile("/problem/(\\d+)");
+                    Matcher m = p.matcher(uri.getPath());
+                    if (m.find()) return Long.valueOf(m.group(1));
                     break;
                 }
-                case "programmers": {
-                    // https://school.programmers.co.kr/learn/courses/30/lessons/42576
-                    Pattern pattern = Pattern.compile("/lessons/(\\d+)");
-                    Matcher matcher = pattern.matcher(uri.getPath());
-                    if (matcher.find()) return matcher.group(1);
+                case "프로그래머스": {
+                    Pattern p = Pattern.compile("/lessons/(\\d+)");
+                    Matcher m = p.matcher(uri.getPath());
+                    if (m.find()) return Long.valueOf(m.group(1));
                     break;
                 }
-                case "leetcode": {
-                    // https://leetcode.com/problems/two-sum/
-                    Pattern pattern = Pattern.compile("/problems/([a-z0-9-]+)/?");
-                    Matcher matcher = pattern.matcher(uri.getPath());
-                    if (matcher.find()) return matcher.group(1);
+                case "코드업": {
+                    Pattern p = Pattern.compile("id=(\\d+)");
+                    Matcher m = p.matcher(uri.getQuery());
+                    if (m.find()) return Long.valueOf(m.group(1));
                     break;
                 }
-                case "codeforces": {
-                    // https://codeforces.com/problemset/problem/4/A
-                    Pattern pattern = Pattern.compile("/problemset/problem/(\\d+)/(\\w+)");
-                    Matcher matcher = pattern.matcher(uri.getPath());
-                    if (matcher.find()) return matcher.group(1) + matcher.group(2);
-                    break;
-                }
-                default:
-                    return "unknown";
             }
         } catch (URISyntaxException e) {
             throw new IllegalArgumentException("Invalid URL format: " + url, e);
         }
-        return "unknown";
+        return null;
+    }
+
+    public static String extractSlugId(String url, String source) {
+        try {
+            URI uri = new URI(url);
+
+            switch (source) {
+                case "리트코드": {
+                    Pattern p = Pattern.compile("/problems/([a-z0-9-]+)/?");
+                    Matcher m = p.matcher(uri.getPath());
+                    if (m.find()) return m.group(1);
+                    break;
+                }
+                case "SW Expert Academy": {
+                    Pattern p = Pattern.compile("contestProbId=([A-Za-z0-9]+)");
+                    Matcher m = p.matcher(uri.getQuery());
+                    if (m.find()) return m.group(1);
+                    break;
+                }
+                case "코드포스": {
+                    Pattern p = Pattern.compile("/problemset/problem/(\\d+)/(\\w+)");
+                    Matcher m = p.matcher(uri.getPath());
+                    if (m.find()) {
+                        return m.group(1) + m.group(2);
+                    }
+                    break;
+                }
+            }
+        } catch (URISyntaxException e) {
+            throw new IllegalArgumentException("Invalid URL format: " + url, e);
+        }
+        return null;
     }
 }

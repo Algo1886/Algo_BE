@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import com.teamalgo.algo.domain.record.Record;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -11,11 +12,12 @@ import java.util.List;
 @Setter
 @Builder
 public class RecordDTO {
+    private Long id;
+    private String title;
+    private List<String> categories;
+    private String author;
 
-    private Long id;           // 풀이 기록 ID
-    private String title;      // 문제 제목
-    private List<String> categories; // 문제 카테고리 리스트
-    private String author;     // 작성자 닉네임
+    @JsonFormat(pattern = "yyyy.MM.dd", timezone = "Asia/Seoul")
     private LocalDateTime createdAt;
 
     public static RecordDTO from(Record record) {

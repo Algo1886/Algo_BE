@@ -12,7 +12,7 @@ import lombok.*;
 @Table(
         name = "problem",
         uniqueConstraints = {
-                @UniqueConstraint(columnNames = {"source", "externalId"})
+                @UniqueConstraint(columnNames = {"source", "numericId", "slugId"})
         }
 )
 public class Problem extends BaseEntity {
@@ -24,12 +24,17 @@ public class Problem extends BaseEntity {
     @Column(nullable = false)
     private String source;
 
-    @Column(nullable = false)
-    private String externalId;
+    private Long numericId;   // BOJ, Programmers, CodeUp, Codeforces
+
+    private String slugId;    // LeetCode 등 slug 기반
 
     @Column(nullable = false)
     private String url;
 
     @Column(nullable = false)
     private String title;
+
+    public String getDisplayId() {
+        return numericId != null ? String.valueOf(numericId) : null;
+    }
 }
