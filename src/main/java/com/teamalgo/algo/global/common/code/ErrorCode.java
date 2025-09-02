@@ -17,9 +17,7 @@ public enum ErrorCode implements BaseCode {
     ACCESS_DENIED(HttpStatus.FORBIDDEN, "접근 권한이 없습니다."),
     OAUTH_FAILED(HttpStatus.UNAUTHORIZED, "OAuth 인증에 실패했습니다."),
     RECORD_NOT_FOUND(HttpStatus.NOT_FOUND, "기록을 찾을 수 없습니다."),
-    ALREADY_REVIEWED(HttpStatus.BAD_REQUEST, "이미 복습 완료 처리된 문제입니다."),
-    IMAGE_UPLOAD_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "이미지 업로드에 실패했습니다."),
-    INVALID_IMAGE_TYPE(HttpStatus.BAD_REQUEST, "허용되지 않는 이미지 형식입니다.");
+    ALREADY_REVIEWED(HttpStatus.BAD_REQUEST, "이미 복습 완료 처리된 문제입니다.");
 
     private final HttpStatus status;
     private final String message;
