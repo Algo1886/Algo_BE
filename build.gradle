@@ -32,6 +32,9 @@ dependencies {
 	implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
 	implementation 'com.google.api-client:google-api-client:1.33.2'
 	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+	implementation platform("software.amazon.awssdk:bom:2.25.52") // 버전 통일용 BOM
+	implementation "software.amazon.awssdk:s3"
+	implementation "software.amazon.awssdk:sts"
 	runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
 	runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
 	compileOnly 'org.projectlombok:lombok'

@@ -24,5 +24,15 @@ spring:
       port: 6379
       host: ${REDIS_HOST}
 
+cloud:
+  aws:
+    credentials:
+      access-key: ${AWS_ACCESS_KEY_ID}
+      secret-key: ${AWS_SECRET_ACCESS_KEY}
+    region:
+      static: ${AWS_REGION}
+    s3:
+      bucket: ${AWS_S3_BUCKET}
+
 kakao:
   client-id: ${KAKAO_CLIENT_ID}
