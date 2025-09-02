@@ -294,12 +294,12 @@ public class RecordService {
                 .build();
     }
 
-    public RecordListResponse.Data createRecordListResponse(Page<com.teamalgo.algo.domain.record.Record> records) {
+    public RecordListResponse createRecordListResponse(Page<com.teamalgo.algo.domain.record.Record> records) {
         List<RecordDTO> recordDTOs = records.stream()
                 .map(RecordDTO::from)
                 .toList();
 
-        return RecordListResponse.Data.builder()
+        return RecordListResponse.builder()
                 .records(recordDTOs)
                 .page(records.getNumber() + 1)
                 .size(records.getSize())
@@ -309,6 +309,7 @@ public class RecordService {
                 .last(records.isLast())
                 .build();
     }
+
 
     private ProblemDTO mapProblem(Problem problem) {
         return ProblemDTO.builder()

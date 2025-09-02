@@ -37,9 +37,9 @@ public class RecordController {
 
     // 목록 조회
     @GetMapping
-    public ResponseEntity<ApiResponse<RecordListResponse.Data>> searchRecords(RecordSearchRequest request) {
+    public ResponseEntity<ApiResponse<RecordListResponse>> searchRecords(RecordSearchRequest request) {
         Page<com.teamalgo.algo.domain.record.Record> records = recordService.searchRecords(request);
-        RecordListResponse.Data response = recordService.createRecordListResponse(records);
+        RecordListResponse response = recordService.createRecordListResponse(records);
         return ApiResponse.success(SuccessCode._OK, response);
     }
 

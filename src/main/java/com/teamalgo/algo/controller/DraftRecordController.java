@@ -23,14 +23,14 @@ public class DraftRecordController {
 
     // Draft 목록 조회
     @GetMapping
-    public ResponseEntity<ApiResponse<RecordListResponse.Data>> getMyDrafts(
+    public ResponseEntity<ApiResponse<RecordListResponse>> getMyDrafts(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
         User user = userDetails.getUser();
         Page<com.teamalgo.algo.domain.record.Record> drafts = recordService.getDraftsByUser(user, PageRequest.of(page, size));
-        RecordListResponse.Data response = recordService.createRecordListResponse(drafts);
+        RecordListResponse response = recordService.createRecordListResponse(drafts);
         return ApiResponse.success(SuccessCode._OK, response);
     }
 }

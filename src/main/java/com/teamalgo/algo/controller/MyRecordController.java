@@ -22,14 +22,14 @@ public class MyRecordController {
 
     // 내 기록 목록 조회
     @GetMapping
-    public ResponseEntity<ApiResponse<RecordListResponse.Data>> getMyRecords(
+    public ResponseEntity<ApiResponse<RecordListResponse>> getMyRecords(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
         User user = userDetails.getUser();
         Page<com.teamalgo.algo.domain.record.Record> records = recordService.getRecordsByUser(user, PageRequest.of(page, size));
-        RecordListResponse.Data response = recordService.createRecordListResponse(records);
+        RecordListResponse response = recordService.createRecordListResponse(records);
         return ApiResponse.success(SuccessCode._OK, response);
     }
 

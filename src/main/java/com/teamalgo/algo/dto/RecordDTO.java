@@ -16,6 +16,7 @@ public class RecordDTO {
     private String title;
     private List<String> categories;
     private String author;
+    private String source;
 
     @JsonFormat(pattern = "yyyy.MM.dd", timezone = "Asia/Seoul")
     private LocalDateTime createdAt;
@@ -28,6 +29,7 @@ public class RecordDTO {
                         .map(rc -> rc.getCategory().getName())
                         .toList())
                 .author(record.getUser().getUsername())
+                .source(record.getProblem().getSource())       // 추가
                 .createdAt(record.getCreatedAt())
                 .build();
     }
