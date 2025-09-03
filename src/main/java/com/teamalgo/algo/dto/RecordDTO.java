@@ -1,11 +1,11 @@
 package com.teamalgo.algo.dto;
 
+import com.teamalgo.algo.domain.record.Record;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
-import com.teamalgo.algo.domain.record.Record;
-import com.fasterxml.jackson.annotation.JsonFormat;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -14,7 +14,7 @@ import java.util.List;
 @Builder
 public class RecordDTO {
     private Long id;
-    private String title;
+    private String title;       // customTitle 우선, 없으면 problem.title
     private List<String> categories;
     private String author;
     private String source;

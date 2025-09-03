@@ -1,5 +1,6 @@
 package com.teamalgo.algo.dto.request;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.teamalgo.algo.dto.RecordCodeDTO;
 import com.teamalgo.algo.dto.RecordCoreIdeaDTO;
 import com.teamalgo.algo.dto.RecordLinkDTO;
@@ -42,10 +43,12 @@ public class RecordUpdateRequest {
     private List<String> categories;
 
     @NotNull
+    @JsonProperty("draft")
     @Schema(description = "임시 저장 여부", example = "true")
     private Boolean isDraft;
 
     @NotNull
+    @JsonProperty("published")
     @Schema(description = "공개 여부", example = "false")
     private Boolean isPublished;
 }

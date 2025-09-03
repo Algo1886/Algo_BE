@@ -34,6 +34,7 @@ public class Problem extends BaseEntity {
     @Column(nullable = false)
     private String title;    // 공식/공용 제목
 
+    // 나중에 문제 번호 보여줄 때 사용
     public String getDisplayId() {
         return numericId != null ? String.valueOf(numericId) : null;
     }

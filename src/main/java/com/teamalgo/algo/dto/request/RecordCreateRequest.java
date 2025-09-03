@@ -1,5 +1,6 @@
 package com.teamalgo.algo.dto.request;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.teamalgo.algo.dto.RecordCodeDTO;
 import com.teamalgo.algo.dto.RecordCoreIdeaDTO;
 import com.teamalgo.algo.dto.RecordLinkDTO;
@@ -41,6 +42,9 @@ public class RecordCreateRequest {
     private List<RecordCoreIdeaDTO> ideas;
     private List<RecordLinkDTO> links;
 
+    @JsonProperty("draft")
     private boolean isDraft;
+
+    @JsonProperty("published")
     private boolean isPublished;
 }

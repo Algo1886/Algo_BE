@@ -1,27 +1,36 @@
 package com.teamalgo.algo.service.record;
 
 import com.teamalgo.algo.domain.problem.Problem;
-import com.teamalgo.algo.domain.record.*;
+import com.teamalgo.algo.domain.record.RecordCode;
+import com.teamalgo.algo.domain.record.RecordStep;
+import com.teamalgo.algo.domain.category.RecordCategory;
 import com.teamalgo.algo.domain.user.User;
-import com.teamalgo.algo.domain.category.*;
-import com.teamalgo.algo.dto.*;
+import com.teamalgo.algo.domain.category.Category;
+import com.teamalgo.algo.dto.RecordCodeDTO;
+import com.teamalgo.algo.dto.RecordCoreIdeaDTO;
+import com.teamalgo.algo.dto.RecordDTO;
+import com.teamalgo.algo.dto.RecordLinkDTO;
+import com.teamalgo.algo.dto.RecordStepDTO;
+import com.teamalgo.algo.dto.AuthorDTO;
 import com.teamalgo.algo.dto.request.RecordCreateRequest;
 import com.teamalgo.algo.dto.request.RecordSearchRequest;
 import com.teamalgo.algo.dto.request.RecordUpdateRequest;
 import com.teamalgo.algo.dto.response.RecordListResponse;
 import com.teamalgo.algo.dto.response.RecordResponse;
+import com.teamalgo.algo.dto.response.ProblemPreviewResponse;
 import com.teamalgo.algo.global.common.code.ErrorCode;
 import com.teamalgo.algo.global.exception.CustomException;
-import com.teamalgo.algo.repository.*;
+import com.teamalgo.algo.repository.RecordRepository;
+import com.teamalgo.algo.repository.ProblemRepository;
+import com.teamalgo.algo.repository.CategoryRepository;
+import com.teamalgo.algo.service.problem.ProblemService;
 import com.teamalgo.algo.service.stats.StatsService;
+import com.teamalgo.algo.service.record.BookmarkService;
 import com.teamalgo.algo.global.common.util.ProblemSourceDetector;
-import com.teamalgo.algo.global.common.util.ProblemFetcher;
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.criteria.Join;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,48 +48,34 @@ public class RecordService {
     private final CategoryRepository categoryRepository;
     private final BookmarkService bookmarkService;
     private final StatsService statsService;
-    private final ProblemFetcher problemFetcher;
+    private final ProblemService problemService;
 
     // 레코드 생성
     @Transactional
     public com.teamalgo.algo.domain.record.Record createRecord(User user, RecordCreateRequest req) {
         Problem problem = problemRepository.findByUrl(req.getProblemUrl())
                 .orElseGet(() -> {
-                    String source = ProblemSourceDetector.detectSource(req.getProblemUrl());
+                    ProblemPreviewResponse preview = problemService.fetchProblemInfo(req.getProblemUrl());
 
-                    Problem.ProblemBuilder builder = Problem.builder()
-                            .url(req.getProblemUrl())
-                            .source(source);
-
-                    Long numericId = ProblemSourceDetector.extractNumericId(req.getProblemUrl(), source);
-                    String slugId = ProblemSourceDetector.extractSlugId(req.getProblemUrl(), source);
-
-                    String fetchedTitle = null;
-                    if (numericId != null && "백준".equals(source)) {
-                        //  백준: solved.ac API 호출
-                        fetchedTitle = problemFetcher.fetchBaekjoonTitle(numericId);
-                        builder.numericId(numericId);
-                    } else if ("프로그래머스".equals(source)) {
-                        // 프로그래머스: Jsoup HTML title 파싱
-                        fetchedTitle = problemFetcher.fetchProgrammersTitle(req.getProblemUrl());
-                    }
-
-                    if (slugId != null) builder.slugId(slugId);
-
-                    //  Problem.title = 공식 제목 (백준은 API, 프로그래머스는 HTML, 기타는 최초 입력자)
-                    String finalTitle = (fetchedTitle != null && !fetchedTitle.isBlank())
-                            ? fetchedTitle
+                    String finalTitle = (preview.getTitle() != null && !preview.getTitle().isBlank())
+                            ? preview.getTitle()
                             : req.getCustomTitle();
 
                     if (finalTitle == null || finalTitle.isBlank()) {
                         throw new CustomException(ErrorCode.INVALID_REQUEST);
                     }
 
-                    builder.title(finalTitle);
-                    return problemRepository.save(builder.build());
+                    return problemRepository.save(
+                            Problem.builder()
+                                    .url(preview.getUrl())
+                                    .source(preview.getSource())
+                                    .title(finalTitle)
+                                    .numericId(ProblemSourceDetector.extractNumericId(preview.getUrl(), preview.getSource()))
+                                    .slugId(ProblemSourceDetector.extractSlugId(preview.getUrl(), preview.getSource()))
+                                    .build()
+                    );
                 });
 
-        //  Record 생성 (customTitle은 사용자 입력 값)
         com.teamalgo.algo.domain.record.Record record = com.teamalgo.algo.domain.record.Record.builder()
                 .user(user)
                 .problem(problem)
@@ -157,10 +152,9 @@ public class RecordService {
     public com.teamalgo.algo.domain.record.Record getRecordById(Long id) {
         return recordRepository.findById(id)
                 .orElseThrow(() -> new CustomException(ErrorCode.RECORD_NOT_FOUND));
-
     }
 
-    // 레코드 목록 조회
+    //  레코드 목록 조회
     public Page<com.teamalgo.algo.domain.record.Record> searchRecords(
             RecordSearchRequest req,
             boolean isAuthenticated
@@ -172,21 +166,17 @@ public class RecordService {
         Pageable pageable = PageRequest.of(req.getPageIndex(), req.getSize(), sort);
         Specification<com.teamalgo.algo.domain.record.Record> spec = Specification.where(null);
 
-        // 로그인 사용자만 조건 필터 적용
         if (isAuthenticated) {
             if (req.getSearch() != null && !req.getSearch().isBlank()) {
                 String keyword = "%" + req.getSearch() + "%";
                 spec = spec.and((root, query, cb) -> {
                     Join<com.teamalgo.algo.domain.record.Record, Problem> problem = root.join("problem");
-
-                    // customTitle 우선, 없으면 problem.title
                     return cb.like(
                             cb.coalesce(root.get("customTitle"), problem.get("title")),
                             keyword
                     );
                 });
             }
-
 
             if (req.getAuthor() != null && !req.getAuthor().isBlank()) {
                 spec = spec.and((root, query, cb) -> {
@@ -197,8 +187,8 @@ public class RecordService {
 
             if (req.getCategory() != null && !req.getCategory().isBlank()) {
                 spec = spec.and((root, query, cb) -> {
-                    Join<com.teamalgo.algo.domain.record.Record, com.teamalgo.algo.domain.category.RecordCategory> rc = root.join("recordCategories");
-                    Join<com.teamalgo.algo.domain.category.RecordCategory, com.teamalgo.algo.domain.category.Category> category = rc.join("category");
+                    Join<com.teamalgo.algo.domain.record.Record, RecordCategory> rc = root.join("recordCategories");
+                    Join<RecordCategory, Category> category = rc.join("category");
                     return cb.equal(category.get("name"), req.getCategory());
                 });
             }
@@ -211,13 +201,10 @@ public class RecordService {
             }
         }
 
-        // 비로그인 사용자는 전체 조회만 가능
         return recordRepository.findAll(spec, pageable);
     }
 
-
-
-    // 내 레코드 목록
+    //  내 레코드 목록
     public Page<com.teamalgo.algo.domain.record.Record> getRecordsByUser(User user, Pageable pageable) {
         return recordRepository.findByUserId(user.getId(), pageable);
     }
@@ -234,6 +221,10 @@ public class RecordService {
 
         if (!record.getUser().getId().equals(user.getId())) {
             throw new CustomException(ErrorCode.ACCESS_DENIED);
+        }
+
+        if (req.getCustomTitle() != null) {
+            record.updateCustomTitle(req.getCustomTitle());
         }
 
         record.updateDetail(req.getDetail());
@@ -290,7 +281,7 @@ public class RecordService {
                                         .build()
                         ));
                 record.getRecordCategories().add(
-                        com.teamalgo.algo.domain.category.RecordCategory.builder()
+                        RecordCategory.builder()
                                 .record(record)
                                 .category(category)
                                 .build()
@@ -321,7 +312,9 @@ public class RecordService {
         return RecordResponse.Data.builder()
                 .id(record.getId())
                 .title(finalTitle)
+                .problemUrl(record.getProblem().getUrl())
                 .categories(mapCategories(record))
+                .source(record.getProblem().getSource())
                 .status(record.getStatus())
                 .difficulty(record.getDifficulty() != null ? record.getDifficulty() : 0)
                 .detail(record.getDetail())
@@ -339,7 +332,7 @@ public class RecordService {
                 .build();
     }
 
-    //  목록 응답 변환
+    // 목록 응답 변환
     public RecordListResponse createRecordListResponse(Page<com.teamalgo.algo.domain.record.Record> records) {
         List<RecordDTO> recordDTOs = records.stream()
                 .map(RecordDTO::from)

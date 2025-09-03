@@ -20,8 +20,9 @@ public class RecordResponse {
         private Long id;
 
         private String title;
-
+        private String problemUrl;
         private List<String> categories;
+        private String source;
 
         private String status;
         private int difficulty;
