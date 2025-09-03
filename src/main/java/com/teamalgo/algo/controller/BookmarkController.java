@@ -58,13 +58,19 @@ public class BookmarkController {
     public ResponseEntity<ApiResponse<BookmarkListResponse>> getMyBookmarks(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String category
     ) {
         User user = userDetails.getUser();
 
-        Page<RecordDTO> bookmarks = bookmarkService.getBookmarkedRecords(user, PageRequest.of(page, size));
-        BookmarkListResponse response = BookmarkListResponse.fromPage(bookmarks);
+        Page<RecordDTO> bookmarks;
+        if (category == null || category.isBlank()) {
+            bookmarks = bookmarkService.getBookmarkedRecords(user, PageRequest.of(page, size));
+        } else {
+            bookmarks = bookmarkService.getBookmarkedRecords(user, PageRequest.of(page, size), category);
+        }
 
+        BookmarkListResponse response = BookmarkListResponse.fromPage(bookmarks);
         return ApiResponse.success(SuccessCode._OK, response);
     }
 

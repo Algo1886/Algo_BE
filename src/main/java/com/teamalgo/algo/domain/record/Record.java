@@ -43,38 +43,46 @@ public class Record extends BaseEntity {
     @Column(name = "is_draft", nullable = false)
     private boolean isDraft;
 
+    @Column(name = "is_published", nullable = false)
+    private boolean isPublished;
+
+    // 사용자별 개별 커스텀 제목
+    private String customTitle;
+
+    // Steps
     @OneToMany(mappedBy = "record", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("stepOrder ASC")
     @Fetch(FetchMode.SUBSELECT)
     @Builder.Default
     private List<RecordStep> steps = new ArrayList<>();
 
+    // Codes
     @OneToMany(mappedBy = "record", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("snippetOrder ASC")
     @Fetch(FetchMode.SUBSELECT)
     @Builder.Default
     private List<RecordCode> codes = new ArrayList<>();
 
+    // Links
     @OneToMany(mappedBy = "record", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("id ASC")
     @Fetch(FetchMode.SUBSELECT)
     @Builder.Default
     private List<RecordLink> links = new ArrayList<>();
 
+    // Ideas
     @OneToMany(mappedBy = "record", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("id ASC")
     @Fetch(FetchMode.SUBSELECT)
     @Builder.Default
     private List<RecordCoreIdea> ideas = new ArrayList<>();
 
+    // Categories
     @OneToMany(mappedBy = "record", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("id ASC")
     @Fetch(FetchMode.SUBSELECT)
     @Builder.Default
     private List<RecordCategory> recordCategories = new ArrayList<>();
-
-    @Column(name = "is_published", nullable = false)
-    private boolean isPublished;
 
     // --- 도메인 메서드 ---
     public void updateDetail(String detail) {
@@ -87,5 +95,9 @@ public class Record extends BaseEntity {
 
     public void updatePublished(boolean isPublished) {
         this.isPublished = isPublished;
+    }
+
+    public void updateCustomTitle(String customTitle) {
+        this.customTitle = customTitle;
     }
 }

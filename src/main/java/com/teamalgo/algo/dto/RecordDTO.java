@@ -1,4 +1,5 @@
 package com.teamalgo.algo.dto;
+
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -22,14 +23,18 @@ public class RecordDTO {
     private LocalDateTime createdAt;
 
     public static RecordDTO from(Record record) {
+        String finalTitle = (record.getCustomTitle() != null && !record.getCustomTitle().isBlank())
+                ? record.getCustomTitle()
+                : record.getProblem().getTitle();
+
         return RecordDTO.builder()
                 .id(record.getId())
-                .title(record.getProblem().getTitle())
+                .title(finalTitle)
                 .categories(record.getRecordCategories().stream()
                         .map(rc -> rc.getCategory().getName())
                         .toList())
                 .author(record.getUser().getUsername())
-                .source(record.getProblem().getSource())       // 추가
+                .source(record.getProblem().getSource())
                 .createdAt(record.getCreatedAt())
                 .build();
     }

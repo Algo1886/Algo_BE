@@ -19,7 +19,8 @@ public class RecordResponse {
     public static class Data {
         private Long id;
 
-        private ProblemDTO problem;
+        private String title;
+
         private List<String> categories;
 
         private String status;

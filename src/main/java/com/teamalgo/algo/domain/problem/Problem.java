@@ -22,19 +22,26 @@ public class Problem extends BaseEntity {
     private Long id;
 
     @Column(nullable = false)
-    private String source;
+    private String source;   // 백준, 프로그래머스 등
 
-    private Long numericId;   // BOJ, Programmers, CodeUp, Codeforces
+    private Long numericId;  // BOJ, Programmers, CodeUp, Codeforces
 
-    private String slugId;    // LeetCode 등 slug 기반
+    private String slugId;   // LeetCode 등 slug 기반
 
     @Column(nullable = false)
     private String url;
 
     @Column(nullable = false)
-    private String title;
+    private String title;    // 공식/공용 제목
 
     public String getDisplayId() {
         return numericId != null ? String.valueOf(numericId) : null;
     }
+
+    public void updateTitle(String newTitle) {
+        this.title = newTitle;
+    }
 }
+
+
+

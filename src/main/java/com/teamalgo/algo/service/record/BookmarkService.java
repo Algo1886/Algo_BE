@@ -52,9 +52,22 @@ public class BookmarkService {
         return bookmarkRepository.existsByUserAndRecord(user, record);
     }
 
-    // 북마크한 레코드 목록 조회
+    // 북마크한 레코드 목록 조회 (카테고리 선택 X)
     public Page<RecordDTO> getBookmarkedRecords(User user, Pageable pageable) {
-        return bookmarkRepository.findByUser(user, pageable)
+        return getBookmarkedRecords(user, pageable, null);
+    }
+
+    // 북마크한 레코드 목록 조회 (카테고리 선택 O)
+    public Page<RecordDTO> getBookmarkedRecords(User user, Pageable pageable, String category) {
+        if (category == null || category.isBlank()) {
+            return bookmarkRepository.findByUser(user, pageable)
+                    .map(bookmark -> RecordDTO.from(bookmark.getRecord()));
+        }
+
+        return bookmarkRepository.findByUserAndRecord_RecordCategories_Category_Name(
+                        user, category, pageable)
                 .map(bookmark -> RecordDTO.from(bookmark.getRecord()));
     }
+
+
 }

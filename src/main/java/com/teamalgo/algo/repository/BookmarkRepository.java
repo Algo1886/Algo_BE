@@ -19,6 +19,8 @@ public interface BookmarkRepository extends JpaRepository<Bookmark, Long> {
     Optional<Bookmark> findByUserAndRecord(User user, Record record);
     // RecordDTO 형태로 북마크 목록 반환
 
+    Page<Bookmark> findByUserAndRecord_RecordCategories_Category_Name(User user, String category, Pageable pageable);
+
     Page<Bookmark> findByUser(User user, Pageable pageable);
     List<Bookmark> findByUser(User user);
     // 사용자 별 전체 북마크 수
