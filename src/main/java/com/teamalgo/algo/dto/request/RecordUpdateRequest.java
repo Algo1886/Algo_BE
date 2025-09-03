@@ -1,5 +1,6 @@
 package com.teamalgo.algo.dto.request;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.teamalgo.algo.dto.RecordCodeDTO;
 import com.teamalgo.algo.dto.RecordCoreIdeaDTO;
 import com.teamalgo.algo.dto.RecordLinkDTO;
@@ -19,8 +20,11 @@ import java.util.List;
 @Schema(description = "레코드 수정 요청 DTO (전체 교체)")
 public class RecordUpdateRequest {
 
+    @Schema(description = "사용자 커스텀 제목")
+    private String customTitle;
+
     @Size(max = 500, message = "Detail should not exceed 500 characters")
-    @Schema(description = "상세 설명", example = "알고리즘 최적화 방법을 추가로 작성했습니다.")
+    @Schema(description = "상세 설명")
     private String detail;
 
     @Schema(description = "코드 스니펫 목록")
@@ -39,10 +43,12 @@ public class RecordUpdateRequest {
     private List<String> categories;
 
     @NotNull
+    @JsonProperty("draft")
     @Schema(description = "임시 저장 여부", example = "true")
     private Boolean isDraft;
 
     @NotNull
+    @JsonProperty("published")
     @Schema(description = "공개 여부", example = "false")
     private Boolean isPublished;
 }

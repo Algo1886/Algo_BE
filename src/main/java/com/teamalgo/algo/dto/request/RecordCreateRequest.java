@@ -1,5 +1,6 @@
 package com.teamalgo.algo.dto.request;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.teamalgo.algo.dto.RecordCodeDTO;
 import com.teamalgo.algo.dto.RecordCoreIdeaDTO;
 import com.teamalgo.algo.dto.RecordLinkDTO;
@@ -19,8 +20,8 @@ public class RecordCreateRequest {
     @NotBlank(message = "Problem URL cannot be blank")
     private String problemUrl;
 
-    @NotBlank(message = "Problem title cannot be blank")
-    private String title;
+    @Size(max = 200, message = "Title should not exceed 200 characters")
+    private String customTitle;
 
     @NotEmpty(message = "Categories cannot be empty")
     private List<String> categories;
@@ -41,6 +42,9 @@ public class RecordCreateRequest {
     private List<RecordCoreIdeaDTO> ideas;
     private List<RecordLinkDTO> links;
 
+    @JsonProperty("draft")
     private boolean isDraft;
+
+    @JsonProperty("published")
     private boolean isPublished;
 }

@@ -15,8 +15,12 @@ public interface RecordCoreIdeaRepository extends JpaRepository<RecordCoreIdea, 
     // 특정 유저의 레코드에서 나온 아이디어 페이지네이션 조회
     Page<RecordCoreIdea> findByRecordUserId(Long userId, Pageable pageable);
 
+    Page<RecordCoreIdea> findByRecordUserIdAndRecord_RecordCategories_Category_Name(
+            Long userId, String category, Pageable pageable);
+
     // 최신순 페이지네이션 조회
     Page<RecordCoreIdea> findByRecordUserIdOrderByRecordCreatedAtDesc(Long userId, Pageable pageable);
+
 
     @Query("""
         SELECT c.name, COUNT(idea.id) as ideaCount

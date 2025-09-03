@@ -1,5 +1,8 @@
 package com.teamalgo.algo.global.common.util;
 
+import com.teamalgo.algo.global.common.code.ErrorCode;
+import com.teamalgo.algo.global.exception.CustomException;
+
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.regex.Matcher;
@@ -42,7 +45,7 @@ public class ProblemSourceDetector {
                 }
             }
         } catch (URISyntaxException e) {
-            throw new IllegalArgumentException("Invalid URL format: " + url, e);
+            throw new CustomException(ErrorCode.INVALID_REQUEST);
         }
         return null;
     }
@@ -74,7 +77,7 @@ public class ProblemSourceDetector {
                 }
             }
         } catch (URISyntaxException e) {
-            throw new IllegalArgumentException("Invalid URL format: " + url, e);
+            throw new CustomException(ErrorCode.INVALID_REQUEST);
         }
         return null;
     }

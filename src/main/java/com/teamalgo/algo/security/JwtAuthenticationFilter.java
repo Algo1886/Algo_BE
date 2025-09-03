@@ -9,6 +9,7 @@ import com.teamalgo.algo.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -29,8 +30,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             "/api/auth/google-login",
             "/api/auth/github-login",
             "/api/auth/refresh",
-            "/swagger-ui", // Swagger
-            "/v3/api-docs" // OpenAPI docs
+            "/swagger-ui",  // Swagger
+            "/v3/api-docs"  // OpenAPI docs
     );
 
     private final JwtTokenProvider jwtTokenProvider;
@@ -41,7 +42,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
         ObjectMapper objectMapper = new ObjectMapper();
-
         String path = request.getRequestURI();
 
         // 특정 경로는 필터 적용 안 함
@@ -54,31 +54,35 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             // 1) Authorization 헤더에서 토큰 추출
             String token = getTokenFromRequest(request);
 
-            if (token == null || !jwtTokenProvider.validateToken(token)) {
+            // ✅ 토큰이 없으면 그냥 익명 사용자로 통과
+            if (token == null) {
+                filterChain.doFilter(request, response);
+                return;
+            }
+
+            // 2) 토큰 유효성 검증
+            if (!jwtTokenProvider.validateToken(token)) {
                 throw new CustomException(ErrorCode.JWT_TOKEN_INVALID);
             }
 
-            // 2) 토큰에서 userId 추출
+            // 3) 토큰에서 userId 추출
             Long userId = jwtTokenProvider.getUserIdFromToken(token);
 
-            // 3) DB에서 유저 조회
+            // 4) DB에서 유저 조회
             User user = userService.findById(userId)
                     .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
-            // 4) CustomUserDetails 로 감싸기
+            // 5) CustomUserDetails 생성
             CustomUserDetails principal = new CustomUserDetails(user);
 
-            // 5) 인증 객체 생성
-            UsernamePasswordAuthenticationToken authentication =
-                    new UsernamePasswordAuthenticationToken(
-                            principal, null, principal.getAuthorities()
-                    );
-            authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+            // 6) 인증 객체 생성 및 SecurityContext에 저장
+            Authentication authentication = new UsernamePasswordAuthenticationToken(
+                    principal, null, principal.getAuthorities()
+            );
+            ((UsernamePasswordAuthenticationToken) authentication)
+                    .setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
-            // 6) SecurityContext 에 저장
             SecurityContextHolder.getContext().setAuthentication(authentication);
-
-            filterChain.doFilter(request, response);
 
         } catch (CustomException e) {
             log.error("JWT 인증 실패: {}", e.getMessage());
@@ -87,7 +91,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             response.setCharacterEncoding("UTF-8");
             objectMapper.writeValue(response.getWriter(),
                     ApiResponse.fail(e.getErrorCode()).getBody());
+            return;
         }
+
+        filterChain.doFilter(request, response);
     }
 
     private String getTokenFromRequest(HttpServletRequest request) {
@@ -98,4 +105,3 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         return null;
     }
 }
-

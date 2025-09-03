@@ -19,8 +19,10 @@ public class RecordResponse {
     public static class Data {
         private Long id;
 
-        private ProblemDTO problem;
+        private String title;
+        private String problemUrl;
         private List<String> categories;
+        private String source;
 
         private String status;
         private int difficulty;

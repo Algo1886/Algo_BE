@@ -1,10 +1,11 @@
 package com.teamalgo.algo.dto;
+
+import com.teamalgo.algo.domain.record.Record;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
-import com.teamalgo.algo.domain.record.Record;
-import com.fasterxml.jackson.annotation.JsonFormat;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -13,7 +14,7 @@ import java.util.List;
 @Builder
 public class RecordDTO {
     private Long id;
-    private String title;
+    private String title;       // customTitle 우선, 없으면 problem.title
     private List<String> categories;
     private String author;
     private String source;
@@ -22,14 +23,18 @@ public class RecordDTO {
     private LocalDateTime createdAt;
 
     public static RecordDTO from(Record record) {
+        String finalTitle = (record.getCustomTitle() != null && !record.getCustomTitle().isBlank())
+                ? record.getCustomTitle()
+                : record.getProblem().getTitle();
+
         return RecordDTO.builder()
                 .id(record.getId())
-                .title(record.getProblem().getTitle())
+                .title(finalTitle)
                 .categories(record.getRecordCategories().stream()
                         .map(rc -> rc.getCategory().getName())
                         .toList())
                 .author(record.getUser().getUsername())
-                .source(record.getProblem().getSource())       // 추가
+                .source(record.getProblem().getSource())
                 .createdAt(record.getCreatedAt())
                 .build();
     }

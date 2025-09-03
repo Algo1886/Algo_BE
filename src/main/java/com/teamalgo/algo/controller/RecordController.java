@@ -37,12 +37,18 @@ public class RecordController {
 
     // 목록 조회
     @GetMapping
-    public ResponseEntity<ApiResponse<RecordListResponse>> searchRecords(RecordSearchRequest request) {
-        Page<com.teamalgo.algo.domain.record.Record> records = recordService.searchRecords(request);
+    public ResponseEntity<ApiResponse<RecordListResponse>> searchRecords(
+            RecordSearchRequest request,
+            @AuthenticationPrincipal org.springframework.security.core.userdetails.UserDetails userDetails
+    ) {
+        boolean isAuthenticated = (userDetails != null);
+
+        Page<com.teamalgo.algo.domain.record.Record> records =
+                recordService.searchRecords(request, isAuthenticated);
+
         RecordListResponse response = recordService.createRecordListResponse(records);
         return ApiResponse.success(SuccessCode._OK, response);
     }
-
     // 생성
     @PostMapping
     public ResponseEntity<ApiResponse<RecordResponse.Data>> createRecord(
