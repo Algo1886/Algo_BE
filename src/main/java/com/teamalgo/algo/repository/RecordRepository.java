@@ -12,14 +12,10 @@ import java.util.Optional;
 public interface RecordRepository extends JpaRepository<Record, Long>, JpaSpecificationExecutor<Record> {
 
     Optional<Record> findById(Long id);
-
+    Optional<Record> findByIdAndIsDraftFalse(Long id);
     List<Record> findByUserId(Long userId);
-
-    Optional<Record> findByIdAndUserId(Long recordId, Long userID);
-
-    Page<Record> findByUserId(Long userId, Pageable pageable);
-
+    Page<Record> findByUserIdAndIsDraftFalse(Long userId, Pageable pageable);
     Page<Record> findByUserIdAndIsDraftTrue(Long userId, Pageable pageable);
+    Optional<Record> findByIdAndUserId(Long recordId, Long userId);
 
 }
-

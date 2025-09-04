@@ -148,9 +148,15 @@ public class RecordService {
         return recordRepository.save(record);
     }
 
-    //  레코드 단건 조회
-    public com.teamalgo.algo.domain.record.Record getRecordById(Long id) {
+    // 레코드 단건 조회
+    // 발행글은 모두 접근 가능, 비공개/임시저장글은 작성자 본인만
+    public com.teamalgo.algo.domain.record.Record getRecordById(Long id, User user) {
         return recordRepository.findById(id)
+                .filter(r -> {
+                    if (r.isDraft()) return r.getUser().getId().equals(user.getId()); // draft → 작성자만
+                    if (!r.isPublished()) return r.getUser().getId().equals(user.getId()); // private → 작성자만
+                    return true;
+                })
                 .orElseThrow(() -> new CustomException(ErrorCode.RECORD_NOT_FOUND));
     }
 
@@ -164,7 +170,12 @@ public class RecordService {
                 : Sort.by(Sort.Direction.DESC, "id");
 
         Pageable pageable = PageRequest.of(req.getPageIndex(), req.getSize(), sort);
-        Specification<com.teamalgo.algo.domain.record.Record> spec = Specification.where(null);
+        Specification<com.teamalgo.algo.domain.record.Record> spec = Specification.where(
+                (root, query, cb) -> cb.and(
+                        cb.isFalse(root.get("isDraft")),
+                        cb.isTrue(root.get("isPublished"))
+                )
+        );
 
         if (isAuthenticated) {
             if (req.getSearch() != null && !req.getSearch().isBlank()) {
@@ -206,7 +217,7 @@ public class RecordService {
 
     //  내 레코드 목록
     public Page<com.teamalgo.algo.domain.record.Record> getRecordsByUser(User user, Pageable pageable) {
-        return recordRepository.findByUserId(user.getId(), pageable);
+        return recordRepository.findByUserIdAndIsDraftFalse(user.getId(), pageable);
     }
 
     // Draft 목록
@@ -217,7 +228,9 @@ public class RecordService {
     // 레코드 수정
     @Transactional
     public com.teamalgo.algo.domain.record.Record updateRecord(Long id, RecordUpdateRequest req, User user) {
-        com.teamalgo.algo.domain.record.Record record = getRecordById(id);
+        com.teamalgo.algo.domain.record.Record record = recordRepository.findById(id)
+                .filter(r -> !r.isDraft() || r.getUser().getId().equals(user.getId()))
+                .orElseThrow(() -> new CustomException(ErrorCode.RECORD_NOT_FOUND));
 
         if (!record.getUser().getId().equals(user.getId())) {
             throw new CustomException(ErrorCode.ACCESS_DENIED);
@@ -231,6 +244,7 @@ public class RecordService {
         if (req.getIsDraft() != null) record.updateDraft(req.getIsDraft());
         if (req.getIsPublished() != null) record.updatePublished(req.getIsPublished());
 
+        // Codes
         if (req.getCodes() != null) {
             record.getCodes().clear();
             recordRepository.flush();
@@ -242,6 +256,7 @@ public class RecordService {
             }
         }
 
+        // Steps
         if (req.getSteps() != null) {
             record.getSteps().clear();
             recordRepository.flush();
@@ -253,6 +268,7 @@ public class RecordService {
             }
         }
 
+        // Ideas
         if (req.getIdeas() != null) {
             record.getIdeas().clear();
             recordRepository.flush();
@@ -261,6 +277,7 @@ public class RecordService {
             }
         }
 
+        // Links
         if (req.getLinks() != null) {
             record.getLinks().clear();
             recordRepository.flush();
@@ -269,6 +286,7 @@ public class RecordService {
             }
         }
 
+        // Categories
         if (req.getCategories() != null) {
             record.getRecordCategories().clear();
             recordRepository.flush();
@@ -281,7 +299,7 @@ public class RecordService {
                                         .build()
                         ));
                 record.getRecordCategories().add(
-                        RecordCategory.builder()
+                        com.teamalgo.algo.domain.category.RecordCategory.builder()
                                 .record(record)
                                 .category(category)
                                 .build()
@@ -295,11 +313,14 @@ public class RecordService {
     // 레코드 삭제
     @Transactional
     public void deleteRecord(Long id, User user) {
-        com.teamalgo.algo.domain.record.Record record = getRecordById(id);
+        com.teamalgo.algo.domain.record.Record record = recordRepository.findById(id)
+                .filter(r -> !r.isDraft() || r.getUser().getId().equals(user.getId()))
+                .orElseThrow(() -> new CustomException(ErrorCode.RECORD_NOT_FOUND));
 
         if (!record.getUser().getId().equals(user.getId())) {
             throw new CustomException(ErrorCode.ACCESS_DENIED);
         }
+
         recordRepository.delete(record);
     }
 
