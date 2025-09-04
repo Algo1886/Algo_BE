@@ -30,7 +30,7 @@ public class RecordController {
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         User user = userDetails.getUser();
-        var record = recordService.getRecordById(id);
+        var record = recordService.getRecordById(id, user);
         var response = recordService.createRecordResponse(record, user);
         return ApiResponse.success(SuccessCode._OK, response);
     }
