@@ -13,6 +13,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 
 import java.time.LocalDate;
 import java.util.*;
@@ -30,7 +31,7 @@ public class StatsService {
 
     // 스트릭 기록
     @Transactional
-    public void updateStats(User user, boolean isSuccess) {
+    public void increaseStats(User user, boolean isSuccess) {
         LocalDate today = LocalDate.now();
 
         // Daily Stats 업데이트
@@ -64,6 +65,33 @@ public class StatsService {
         }
 
         userRepository.save(user);
+    }
+
+    @Transactional
+    public void decreaseStats(User user, LocalDate date, boolean isSuccess) {
+        StatsDaily stats = statsDailyRepository.findByUserAndStatDate(user, date)
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
+
+        stats.setRecordedCnt(stats.getRecordedCnt() - 1);
+        if (isSuccess) {
+            stats.setSuccessCnt(stats.getSuccessCnt() - 1);
+        } else {
+            stats.setFailCnt(stats.getFailCnt() - 1);
+        }
+
+        // recordedCnt가 0이면 row 삭제
+        if (stats.getRecordedCnt() <= 0) {
+            statsDailyRepository.delete(stats);
+
+            // 삭제된 날짜가 streak에 영향 있는 경우에만 다시 계산
+            if (date.equals(user.getLastRecordedDate()) ||
+                    (user.getMaxStreakStartDate() != null && user.getMaxStreakEndDate() != null &&
+                            !date.isBefore(user.getMaxStreakStartDate()) && !date.isAfter(user.getMaxStreakEndDate()))) {
+                recalculateStreak(user);
+            }
+        } else {
+            statsDailyRepository.save(stats);
+        }
     }
 
     // 1년 스트릭 조회
@@ -100,6 +128,8 @@ public class StatsService {
     public UserStatsResponse getUserStats(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+        int currentStreak = getValidCurrentStreak(user);
 
         LocalDate today = LocalDate.now();
         LocalDate startOfWeek = today.minusDays(6);
@@ -157,7 +187,7 @@ public class StatsService {
 
         return UserStatsResponse.of(
                 user,
-                user.getCurrentStreak(),
+                currentStreak,
                 user.getMaxStreak(),
                 totalRecords,
                 thisWeekRecords,
@@ -184,11 +214,9 @@ public class StatsService {
                 ? (successCount * 100.0 / (successCount + failCount))
                 : 0.0;
 
-        int streakDays = user.getCurrentStreak();
+        int streakDays = getValidCurrentStreak(user);
 
         Long bookmarkCount = bookmarkRepository.countByUser(user);
-
-
 
         return DashboardResponse.builder()
                 .recordCount(recordCount.intValue())
@@ -199,5 +227,61 @@ public class StatsService {
                 .recentIdeas(Collections.emptyList())
                 .build();
     }
+
+    private void recalculateStreak(User user) {
+        List<StatsDaily> statsList = statsDailyRepository.findByUserOrderByStatDateAsc(user);
+
+        int current = 0;
+        int max = 0;
+        LocalDate prev = null;
+        LocalDate streakStart = null;
+        LocalDate maxStart = null;
+        LocalDate maxEnd = null;
+
+        for (StatsDaily s : statsList) {
+            if (prev == null || s.getStatDate().equals(prev.plusDays(1))) {
+                if (current == 0) {
+                    streakStart = s.getStatDate();
+                }
+                current++;
+            } else {
+                current = 1;
+                streakStart = s.getStatDate();
+            }
+
+            if (current > max) {
+                max = current;
+                maxStart = streakStart;
+                maxEnd = s.getStatDate();
+            }
+
+            prev = s.getStatDate();
+        }
+
+        user.setCurrentStreak(current);
+        user.setMaxStreak(max);
+        user.setMaxStreakStartDate(maxStart);
+        user.setMaxStreakEndDate(maxEnd);
+        user.setLastRecordedDate(prev);
+
+        userRepository.save(user);
+    }
+
+    private int getValidCurrentStreak(User user) {
+        LocalDate today = LocalDate.now();
+        LocalDate last = user.getLastRecordedDate();
+
+        if (last != null && (last.equals(today) || last.equals(today.minusDays(1)))) {
+            return user.getCurrentStreak();
+        }
+
+        if (user.getCurrentStreak() != 0) {
+            user.setCurrentStreak(0);
+            userRepository.save(user);
+        }
+
+        return 0;
+    }
+
 
 }
