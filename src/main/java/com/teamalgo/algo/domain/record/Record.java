@@ -1,7 +1,9 @@
 package com.teamalgo.algo.domain.record;
 
+import com.teamalgo.algo.domain.bookmark.Bookmark;
 import com.teamalgo.algo.domain.category.RecordCategory;
 import com.teamalgo.algo.domain.problem.Problem;
+import com.teamalgo.algo.domain.review.ReviewLog;
 import com.teamalgo.algo.domain.user.User;
 import com.teamalgo.algo.global.entity.BaseEntity;
 import jakarta.persistence.*;
@@ -83,6 +85,12 @@ public class Record extends BaseEntity {
     @Fetch(FetchMode.SUBSELECT)
     @Builder.Default
     private List<RecordCategory> recordCategories = new ArrayList<>();
+
+    @OneToMany(mappedBy = "record", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ReviewLog> reviewLogs = new ArrayList<>();
+
+    @OneToMany(mappedBy = "record", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Bookmark> bookmarks = new ArrayList<>();
 
     // --- 도메인 메서드 ---
     public void updateDetail(String detail) {
