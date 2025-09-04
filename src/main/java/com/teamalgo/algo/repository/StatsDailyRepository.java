@@ -27,4 +27,6 @@ public interface StatsDailyRepository extends JpaRepository<StatsDaily, Long> {
     @Query("SELECT SUM(s.successCnt), SUM(s.failCnt) FROM StatsDaily s WHERE s.user = :user")
     Object getSuccessAndFail(@Param("user") User user);
 
+    List<StatsDaily> findByUserOrderByStatDateAsc(User user);
+
 }
