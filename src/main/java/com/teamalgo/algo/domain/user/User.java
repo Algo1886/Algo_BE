@@ -54,6 +54,12 @@ public class User extends BaseEntity {
     @Column
     private LocalDate lastRecordedDate; // 마지막 기록한 날짜
 
+    // 최장 스트릭 기간
+    @Column
+    private LocalDate maxStreakStartDate;
+    @Column
+    private LocalDate maxStreakEndDate;
+
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Record> records = new ArrayList<>();
 

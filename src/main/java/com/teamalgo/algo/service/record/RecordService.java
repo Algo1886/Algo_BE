@@ -25,19 +25,23 @@ import com.teamalgo.algo.repository.ProblemRepository;
 import com.teamalgo.algo.repository.CategoryRepository;
 import com.teamalgo.algo.service.problem.ProblemService;
 import com.teamalgo.algo.service.stats.StatsService;
-import com.teamalgo.algo.service.record.BookmarkService;
 import com.teamalgo.algo.global.common.util.ProblemSourceDetector;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.criteria.Join;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -49,6 +53,9 @@ public class RecordService {
     private final BookmarkService bookmarkService;
     private final StatsService statsService;
     private final ProblemService problemService;
+
+    @PersistenceContext
+    private EntityManager entityManager;
 
     // 레코드 생성
     @Transactional
@@ -143,7 +150,7 @@ public class RecordService {
         }
 
         boolean isSuccess = record.getStatus().equals("success");
-        statsService.updateStats(user, isSuccess);
+        statsService.increaseStats(user, isSuccess);
 
         return recordRepository.save(record);
     }
@@ -341,6 +348,11 @@ public class RecordService {
         }
 
         recordRepository.delete(record);
+
+        // 통계 반영
+        LocalDate date = record.getCreatedAt().toLocalDate();
+        boolean isSuccess = record.getStatus().equals("success");
+        statsService.decreaseStats(user, date, isSuccess);
     }
 
     // 단건 응답 변환
