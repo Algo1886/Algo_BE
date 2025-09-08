@@ -1,5 +1,6 @@
 package com.teamalgo.algo.dto;
 
+import jakarta.validation.constraints.NotBlank;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -21,13 +22,13 @@ import com.teamalgo.algo.domain.record.Record;
 public class RecordCodeDTO {
     private Long id; // Create 시 null, Update/Response 시 존재
 
-    @NotNull(message = "Code cannot be null")
+    @NotBlank(message = "Code cannot be blank")
     private String code;
 
-    @NotNull(message = "Language cannot be null")
+    @NotBlank(message = "Language cannot be blank")
     private String language;
 
-    @NotNull(message = "Verdict cannot be null")
+    @NotBlank(message = "Verdict cannot be blank")
     @Pattern(regexp = "pass|fail", message = "Verdict must be 'pass' or 'fail'")
     private String verdict;
 

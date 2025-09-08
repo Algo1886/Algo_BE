@@ -27,9 +27,11 @@ public class RecordUpdateRequest {
     @Schema(description = "상세 설명")
     private String detail;
 
+    @Size(min = 1, message = "At least one code is required if provided")
     @Schema(description = "코드 스니펫 목록")
     private List<RecordCodeDTO> codes;
 
+    @Size(min = 1, message = "At least one step is required if provided")
     @Schema(description = "풀이 단계 목록")
     private List<RecordStepDTO> steps;
 
@@ -42,12 +44,10 @@ public class RecordUpdateRequest {
     @Schema(description = "카테고리 목록", example = "[\"DP\", \"Graph\"]")
     private List<String> categories;
 
-    @NotNull
     @JsonProperty("draft")
     @Schema(description = "임시 저장 여부", example = "true")
     private Boolean isDraft;
 
-    @NotNull
     @JsonProperty("published")
     @Schema(description = "공개 여부", example = "false")
     private Boolean isPublished;

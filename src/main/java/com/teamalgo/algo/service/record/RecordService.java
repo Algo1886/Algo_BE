@@ -243,16 +243,31 @@ public class RecordService {
             throw new CustomException(ErrorCode.ACCESS_DENIED);
         }
 
+        // Custom title
         if (req.getCustomTitle() != null) {
             record.updateCustomTitle(req.getCustomTitle());
         }
 
-        record.updateDetail(req.getDetail());
-        if (req.getIsDraft() != null) record.updateDraft(req.getIsDraft());
-        if (req.getIsPublished() != null) record.updatePublished(req.getIsPublished());
+        // Detail
+        if (req.getDetail() != null) {
+            record.updateDetail(req.getDetail());
+        }
+
+        // Draft
+        if (req.getIsDraft() != null) {
+            record.updateDraft(req.getIsDraft());
+        }
+
+        // Published
+        if (req.getIsPublished() != null) {
+            record.updatePublished(req.getIsPublished());
+        }
 
         // Codes
         if (req.getCodes() != null) {
+            if (req.getCodes().isEmpty()) {
+                throw new CustomException(ErrorCode.INVALID_REQUEST);
+            }
             record.getCodes().clear();
             recordRepository.flush();
             AtomicInteger order = new AtomicInteger(0);
@@ -265,6 +280,9 @@ public class RecordService {
 
         // Steps
         if (req.getSteps() != null) {
+            if (req.getSteps().isEmpty()) {
+                throw new CustomException(ErrorCode.INVALID_REQUEST);
+            }
             record.getSteps().clear();
             recordRepository.flush();
             AtomicInteger order = new AtomicInteger(0);
@@ -316,6 +334,7 @@ public class RecordService {
 
         return record;
     }
+
 
     // 레코드 삭제
     @Transactional
