@@ -5,6 +5,7 @@ import com.teamalgo.algo.dto.RecordCodeDTO;
 import com.teamalgo.algo.dto.RecordCoreIdeaDTO;
 import com.teamalgo.algo.dto.RecordLinkDTO;
 import com.teamalgo.algo.dto.RecordStepDTO;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 import lombok.*;
 
@@ -34,11 +35,18 @@ public class RecordCreateRequest {
     @Max(value = 5, message = "Difficulty must be between 1 and 5")
     private int difficulty;
 
+    @NotBlank(message = "Detail cannot be blank")
     @Size(max = 2000, message = "Detail should not exceed 2000 characters")
     private String detail;
 
-    private List<RecordCodeDTO> codes;
-    private List<RecordStepDTO> steps;
+    @NotNull(message = "At least one code is required")
+    @Size(min = 1, message = "At least one code is required")
+    private List<@Valid RecordCodeDTO> codes;
+
+    @NotNull(message = "At least one step is required")
+    @Size(min = 1, message = "At least one step is required")
+    private List<@Valid RecordStepDTO> steps;
+
     private List<RecordCoreIdeaDTO> ideas;
     private List<RecordLinkDTO> links;
 

@@ -15,6 +15,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import jakarta.validation.Valid;
 
 @RestController
 @RequiredArgsConstructor
@@ -53,7 +54,7 @@ public class RecordController {
     @PostMapping
     public ResponseEntity<ApiResponse<RecordResponse.Data>> createRecord(
             @AuthenticationPrincipal CustomUserDetails userDetails,
-            @RequestBody RecordCreateRequest request
+            @Valid @RequestBody RecordCreateRequest request
     ) {
         User user = userDetails.getUser();
         var record = recordService.createRecord(user, request);
@@ -65,7 +66,7 @@ public class RecordController {
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<RecordResponse.Data>> updateRecord(
             @PathVariable Long id,
-            @RequestBody RecordUpdateRequest request,
+            @Valid @RequestBody RecordUpdateRequest request,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         User user = userDetails.getUser();
