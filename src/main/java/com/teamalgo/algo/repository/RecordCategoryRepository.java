@@ -13,14 +13,14 @@ import java.util.List;
 public interface RecordCategoryRepository extends JpaRepository<RecordCategory, Long> {
 
     @Query("""
-        SELECT c.name, COUNT(r.id) as solvedCount
-        FROM RecordCategory rc
-        JOIN rc.record r
-        JOIN rc.category c
-        WHERE r.user = :user
-        GROUP BY c.name
-        ORDER BY solvedCount DESC
-    """)
+    SELECT c.name, COUNT(r.id) as solvedCount, MAX(r.createdAt) as lastSolvedDate
+    FROM RecordCategory rc
+    JOIN rc.record r
+    JOIN rc.category c
+    WHERE r.user = :user
+    GROUP BY c.name
+    ORDER BY solvedCount DESC, lastSolvedDate DESC
+""")
     List<Object[]> findMostSolvedByUser(@Param("user") User user, Pageable pageable);
 
     @Query("SELECT new com.teamalgo.algo.dto.response.CategoryStatsResponse(c.slug, c.name, COUNT(rc)) " +
