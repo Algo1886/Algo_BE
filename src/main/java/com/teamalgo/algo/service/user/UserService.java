@@ -6,6 +6,7 @@ import com.teamalgo.algo.dto.request.UserUpdateRequest;
 import com.teamalgo.algo.global.common.code.ErrorCode;
 import com.teamalgo.algo.global.exception.CustomException;
 import com.teamalgo.algo.repository.UserRepository;
+import com.teamalgo.algo.service.stats.StatsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,6 +19,8 @@ import java.util.UUID;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final StatsService statsService;
+
     @Transactional(readOnly = true)
     public Optional<User> findById(Long id) {
         return userRepository.findById(id);
@@ -28,8 +31,10 @@ public class UserService {
     }
 
     public UserResponse getUserInfo (Long userId) {
-        return UserResponse.from(userRepository.findById(userId)
-                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND)));
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+        int streak = statsService.getValidCurrentStreak(user);
+        return UserResponse.from(user, streak);
     }
 
     public User saveUser(User user) {

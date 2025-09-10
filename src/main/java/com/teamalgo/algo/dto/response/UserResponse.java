@@ -1,5 +1,6 @@
 package com.teamalgo.algo.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.teamalgo.algo.domain.user.User;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -13,11 +14,23 @@ public class UserResponse {
     private String username;
     private String avatarUrl;
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private Integer streak;
+
     public static UserResponse from(User user) {
         return UserResponse.builder()
                 .id(user.getId())
                 .username(user.getUsername())
                 .avatarUrl(user.getAvatarUrl())
+                .build();
+    }
+
+    public static UserResponse from(User user, int streak) {
+        return UserResponse.builder()
+                .id(user.getId())
+                .username(user.getUsername())
+                .avatarUrl(user.getAvatarUrl())
+                .streak(streak)
                 .build();
     }
 
