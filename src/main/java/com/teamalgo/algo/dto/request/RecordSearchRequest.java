@@ -11,19 +11,15 @@ import java.time.LocalDate;
 
 @Getter
 @Setter
-@Builder
 public class RecordSearchRequest {
 
-    @Min(value = 1, message = "Page number must be at least 1")
-    @Builder.Default
+    @Min(1)
     private Integer page = 1;   // 페이지 번호 (기본값 1)
 
-    @Min(value = 1, message = "Page size must be at least 1")
-    @Max(value = 100, message = "Page size cannot be greater than 100")
-    @Builder.Default
+    @Min(1)
+    @Max(30)
     private Integer size = 20;  // 페이지 크기 (기본값 20, 최대 100)
 
-    @Builder.Default
     private SortType sort = SortType.LATEST; // 정렬 기준 (LATEST, POPULAR)
 
     private String category;  // 문제 카테고리 (예: DFS, BFS)
