@@ -4,6 +4,7 @@ import com.teamalgo.algo.domain.user.User;
 import com.teamalgo.algo.dto.response.UserResponse;
 import com.teamalgo.algo.dto.request.UserUpdateRequest;
 import com.teamalgo.algo.global.common.code.ErrorCode;
+import com.teamalgo.algo.global.common.util.UsernameGenerator;
 import com.teamalgo.algo.global.exception.CustomException;
 import com.teamalgo.algo.repository.UserRepository;
 import com.teamalgo.algo.service.stats.StatsService;
@@ -12,7 +13,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -20,6 +20,7 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final StatsService statsService;
+    private final UsernameGenerator usernameGenerator;
 
     @Transactional(readOnly = true)
     public Optional<User> findById(Long id) {
@@ -43,10 +44,15 @@ public class UserService {
 
     // 신규 가입 사용자
     public User createUser(String provider, String providerId, String avatarUrl) {
+        String username;
+        do {
+            username = usernameGenerator.generateRandomUsername();
+        } while (userRepository.existsByUsername(username));
+
         User user = User.builder()
                 .provider(provider)
                 .providerId(providerId)
-                .username(generateUniqueUsername())
+                .username(username)
                 .avatarUrl(avatarUrl)
                 .build();
 
@@ -73,23 +79,6 @@ public class UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
         userRepository.delete(user);
-    }
-
-    public String generateRandomUsername() {
-        // UUID 이용해서 랜덤 handle 생성
-        String prefix = "algo_";
-        String randomPart = UUID.randomUUID().toString()
-                .replace("-", "")
-                .substring(0, 8);
-        return prefix + randomPart;
-    }
-
-    public String generateUniqueUsername() {
-        String username;
-        do {
-            username = generateRandomUsername();
-        } while (userRepository.existsByUsername(username));
-        return username;
     }
 
 }
