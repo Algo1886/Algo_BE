@@ -6,6 +6,7 @@ import com.teamalgo.algo.global.common.api.ApiResponse;
 import com.teamalgo.algo.global.common.code.SuccessCode;
 import com.teamalgo.algo.service.stats.StatsService;
 import com.teamalgo.algo.service.user.UserService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -29,7 +30,9 @@ public class UserController {
 
     // 사용자 정보 수정
     @PatchMapping
-    public ResponseEntity<ApiResponse<UserResponse>> updateMyInfo(Authentication authentication, @RequestBody UserUpdateRequest request) {
+    public ResponseEntity<ApiResponse<UserResponse>> updateMyInfo(
+            Authentication authentication,
+            @Valid @RequestBody UserUpdateRequest request) {
         Long userId = Long.parseLong(authentication.getName());
         UserResponse response = userService.updateUser(userId, request);
         return ApiResponse.success(SuccessCode._OK, response);

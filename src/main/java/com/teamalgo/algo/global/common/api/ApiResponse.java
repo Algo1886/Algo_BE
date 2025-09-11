@@ -5,6 +5,7 @@ import com.teamalgo.algo.global.common.code.BaseCode;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 @Data
@@ -25,4 +26,10 @@ public class ApiResponse<T> {
         ApiResponse<T> response = new ApiResponse<>(false, code.getMessage(), null);
         return ResponseEntity.status(code.getStatus()).body(response);
     }
+
+    public static <T> ResponseEntity<ApiResponse<T>> fail(HttpStatus status, String message) {
+        ApiResponse<T> response = new ApiResponse<>(false, message, null);
+        return ResponseEntity.status(status).body(response);
+    }
+
 }
