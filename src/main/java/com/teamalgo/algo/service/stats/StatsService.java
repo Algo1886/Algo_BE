@@ -267,7 +267,7 @@ public class StatsService {
         userRepository.save(user);
     }
 
-    private int getValidCurrentStreak(User user) {
+    public int getValidCurrentStreak(User user) {
         LocalDate today = LocalDate.now();
         LocalDate last = user.getLastRecordedDate();
 
