@@ -34,6 +34,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             "/v3/api-docs"  // OpenAPI docs
     );
 
+    private static final List<String> OPTIONAL_PATHS = List.of(
+            "/api/records"
+    );
+
     private final JwtTokenProvider jwtTokenProvider;
     private final UserService userService;
 
@@ -54,10 +58,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             // 1) Authorization 헤더에서 토큰 추출
             String token = getTokenFromRequest(request);
 
-            // ✅ 토큰이 없으면 그냥 익명 사용자로 통과
             if (token == null) {
-                filterChain.doFilter(request, response);
-                return;
+                // GET /api/records만 익명 허용
+                if ("GET".equalsIgnoreCase(request.getMethod()) && "/api/records".equals(path)) {
+                    filterChain.doFilter(request, response);
+                    return;
+                }
             }
 
             // 2) 토큰 유효성 검증
