@@ -24,11 +24,12 @@ public class MyRecordController {
     @GetMapping
     public ResponseEntity<ApiResponse<RecordListResponse>> getMyRecords(
             @AuthenticationPrincipal CustomUserDetails userDetails,
-            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
         User user = userDetails.getUser();
-        Page<com.teamalgo.algo.domain.record.Record> records = recordService.getRecordsByUser(user, PageRequest.of(page, size));
+        int pageIndex = (page > 0) ? page - 1 : 0;
+        Page<com.teamalgo.algo.domain.record.Record> records = recordService.getRecordsByUser(user, PageRequest.of(pageIndex, size));
         RecordListResponse response = recordService.createRecordListResponse(records);
         return ApiResponse.success(SuccessCode._OK, response);
     }
