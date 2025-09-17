@@ -29,18 +29,20 @@ public class CoreIdeaController {
     @GetMapping("/ideas")
     public ResponseEntity<ApiResponse<CoreIdeaListResponse>> getMyIdeas(
             @AuthenticationPrincipal CustomUserDetails userDetails,
-            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) String category
     ) {
         User user = userService.findById(userDetails.getUser().getId())
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
+        int pageIndex = (page > 0) ? page - 1 : 0;
+
         Page<CoreIdeaDTO> ideas;
         if (category == null || category.isBlank()) {
-            ideas = coreIdeaService.getUserIdeas(user.getId(), PageRequest.of(page, size));
+            ideas = coreIdeaService.getUserIdeas(user.getId(), PageRequest.of(pageIndex, size));
         } else {
-            ideas = coreIdeaService.getUserIdeas(user.getId(), PageRequest.of(page, size), category);
+            ideas = coreIdeaService.getUserIdeas(user.getId(), PageRequest.of(pageIndex, size), category);
         }
 
         CoreIdeaListResponse response = CoreIdeaListResponse.fromPage(ideas);
