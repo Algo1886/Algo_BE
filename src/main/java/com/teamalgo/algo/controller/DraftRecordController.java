@@ -25,12 +25,11 @@ public class DraftRecordController {
     @GetMapping
     public ResponseEntity<ApiResponse<RecordListResponse>> getMyDrafts(
             @AuthenticationPrincipal CustomUserDetails userDetails,
-            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
         User user = userDetails.getUser();
-        int pageIndex = (page > 0) ? page - 1 : 0;
-        Page<com.teamalgo.algo.domain.record.Record> drafts = recordService.getDraftsByUser(user, PageRequest.of(pageIndex, size));
+        Page<com.teamalgo.algo.domain.record.Record> drafts = recordService.getDraftsByUser(user, PageRequest.of(page, size));
         RecordListResponse response = recordService.createRecordListResponse(drafts);
         return ApiResponse.success(SuccessCode._OK, response);
     }
