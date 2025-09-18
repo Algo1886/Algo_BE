@@ -176,6 +176,7 @@ public class RecordService {
             LocalDateTime start = req.getStartDate() != null ? req.getStartDate().atStartOfDay() : null;
             LocalDateTime end = req.getEndDate() != null ? req.getEndDate().plusDays(1).atStartOfDay().minusNanos(1) : null;
 
+            if(isAuthenticated) {
             return recordRepository.findPopularWithFilters(
                     (req.getSearch() != null && !req.getSearch().isBlank()) ? "%" + req.getSearch() + "%" : null,
                     (req.getAuthor() != null && !req.getAuthor().isBlank()) ? req.getAuthor() : null,
@@ -184,6 +185,12 @@ public class RecordService {
                     end,
                     PageRequest.of(req.getPageIndex(), req.getSize())
             );
+        } else {
+                return recordRepository.findPopularWithFilters(
+                        null, null, null, start, end,
+                        PageRequest.of(req.getPageIndex(), req.getSize())
+                );
+            }
         }
 
         Sort sort = (req.getSort() == RecordSearchRequest.SortType.LATEST)
@@ -203,9 +210,9 @@ public class RecordService {
                 String keyword = "%" + req.getSearch() + "%";
                 spec = spec.and((root, query, cb) -> {
                     Join<com.teamalgo.algo.domain.record.Record, Problem> problem = root.join("problem");
-                    return cb.like(
-                            cb.coalesce(root.get("customTitle"), problem.get("title")),
-                            keyword
+                    return cb.or(
+                            cb.like(root.get("customTitle"), keyword),
+                            cb.like(problem.get("title"), keyword)
                     );
                 });
             }
