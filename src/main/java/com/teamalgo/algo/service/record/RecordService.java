@@ -172,6 +172,20 @@ public class RecordService {
             RecordSearchRequest req,
             boolean isAuthenticated
     ) {
+        if (req.getSort() == RecordSearchRequest.SortType.POPULAR) {
+            LocalDateTime start = req.getStartDate() != null ? req.getStartDate().atStartOfDay() : null;
+            LocalDateTime end = req.getEndDate() != null ? req.getEndDate().plusDays(1).atStartOfDay().minusNanos(1) : null;
+
+            return recordRepository.findPopularWithFilters(
+                    (req.getSearch() != null && !req.getSearch().isBlank()) ? "%" + req.getSearch() + "%" : null,
+                    (req.getAuthor() != null && !req.getAuthor().isBlank()) ? req.getAuthor() : null,
+                    (req.getCategory() != null && !req.getCategory().isBlank()) ? req.getCategory() : null,
+                    start,
+                    end,
+                    PageRequest.of(req.getPageIndex(), req.getSize())
+            );
+        }
+
         Sort sort = (req.getSort() == RecordSearchRequest.SortType.LATEST)
                 ? Sort.by(Sort.Direction.DESC, "createdAt")
                 : Sort.by(Sort.Direction.DESC, "id");

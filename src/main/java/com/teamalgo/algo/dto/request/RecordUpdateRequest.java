@@ -23,7 +23,6 @@ public class RecordUpdateRequest {
     @Schema(description = "사용자 커스텀 제목")
     private String customTitle;
 
-    @Size(max = 500, message = "Detail should not exceed 500 characters")
     @Schema(description = "상세 설명")
     private String detail;
 

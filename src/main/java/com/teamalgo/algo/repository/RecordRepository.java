@@ -5,7 +5,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -18,4 +21,28 @@ public interface RecordRepository extends JpaRepository<Record, Long>, JpaSpecif
     Page<Record> findByUserIdAndIsDraftTrue(Long userId, Pageable pageable);
     Optional<Record> findByIdAndUserId(Long recordId, Long userId);
 
+    @Query("""
+    SELECT r
+    FROM Record r
+    LEFT JOIN r.bookmarks b
+    LEFT JOIN r.problem p
+    LEFT JOIN r.recordCategories rc
+    LEFT JOIN rc.category c
+    LEFT JOIN r.user u
+    WHERE r.isDraft = false AND r.isPublished = true
+      AND (:search IS NULL OR r.customTitle LIKE %:search% OR p.title LIKE %:search%)
+      AND (:author IS NULL OR u.username = :author)
+      AND (:category IS NULL OR c.name = :category)
+      AND (:startDate IS NULL OR :endDate IS NULL OR r.createdAt BETWEEN :startDate AND :endDate)
+    GROUP BY r
+    ORDER BY COUNT(b) DESC, LENGTH(r.detail) DESC
+    """)
+    Page<Record> findPopularWithFilters(
+            @Param("search") String search,
+            @Param("author") String author,
+            @Param("category") String category,
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate,
+            Pageable pageable
+    );
 }
