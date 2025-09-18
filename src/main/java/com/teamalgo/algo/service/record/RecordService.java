@@ -150,7 +150,11 @@ public class RecordService {
         }
 
         boolean isSuccess = record.getStatus().equals("success");
-        statsService.increaseStats(user, isSuccess);
+
+        // 임시 저장 아닐때만 통계 반영
+        if (!record.isDraft()) {
+            statsService.increaseStats(user, isSuccess);
+        }
 
         return recordRepository.save(record);
     }
@@ -250,12 +254,14 @@ public class RecordService {
     @Transactional
     public com.teamalgo.algo.domain.record.Record updateRecord(Long id, RecordUpdateRequest req, User user) {
         com.teamalgo.algo.domain.record.Record record = recordRepository.findById(id)
-                .filter(r -> !r.isDraft() || r.getUser().getId().equals(user.getId()))
                 .orElseThrow(() -> new CustomException(ErrorCode.RECORD_NOT_FOUND));
 
         if (!record.getUser().getId().equals(user.getId())) {
             throw new CustomException(ErrorCode.ACCESS_DENIED);
         }
+
+
+        boolean prevDraft = record.isDraft();
 
         // Custom title
         if (req.getCustomTitle() != null) {
@@ -346,6 +352,12 @@ public class RecordService {
             }
         }
 
+        // 임시저장 -> 발행으로 전환된 경우 통계 반영
+        if (prevDraft && !record.isDraft()) {
+            boolean isSuccess = record.getStatus().equals("success");
+            statsService.increaseStats(user, isSuccess);
+        }
+
         return record;
     }
 
@@ -354,7 +366,6 @@ public class RecordService {
     @Transactional
     public void deleteRecord(Long id, User user) {
         com.teamalgo.algo.domain.record.Record record = recordRepository.findById(id)
-                .filter(r -> !r.isDraft() || r.getUser().getId().equals(user.getId()))
                 .orElseThrow(() -> new CustomException(ErrorCode.RECORD_NOT_FOUND));
 
         if (!record.getUser().getId().equals(user.getId())) {
@@ -363,10 +374,12 @@ public class RecordService {
 
         recordRepository.delete(record);
 
-        // 통계 반영
-        LocalDate date = record.getCreatedAt().toLocalDate();
-        boolean isSuccess = record.getStatus().equals("success");
-        statsService.decreaseStats(user, date, isSuccess);
+        if (!record.isDraft()) {
+            // 통계 반영
+            LocalDate date = record.getCreatedAt().toLocalDate();
+            boolean isSuccess = record.getStatus().equals("success");
+            statsService.decreaseStats(user, date, isSuccess);
+        }
     }
 
     // 단건 응답 변환
