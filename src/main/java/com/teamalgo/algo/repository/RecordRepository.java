@@ -31,6 +31,7 @@ public interface RecordRepository extends JpaRepository<Record, Long>, JpaSpecif
     LEFT JOIN r.user u
     WHERE r.isDraft = false AND r.isPublished = true
       AND (:search IS NULL OR r.customTitle LIKE %:search% OR p.title LIKE %:search%)
+      AND (:url IS NULL OR p.url = :url)
       AND (:author IS NULL OR u.username = :author)
       AND (:category IS NULL OR c.name = :category)
       AND (:startDate IS NULL OR :endDate IS NULL OR r.createdAt BETWEEN :startDate AND :endDate)
@@ -39,6 +40,7 @@ public interface RecordRepository extends JpaRepository<Record, Long>, JpaSpecif
     """)
     Page<Record> findPopularWithFilters(
             @Param("search") String search,
+            @Param("url") String url,
             @Param("author") String author,
             @Param("category") String category,
             @Param("startDate") LocalDateTime startDate,

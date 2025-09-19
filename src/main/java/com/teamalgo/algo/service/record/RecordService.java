@@ -171,6 +171,15 @@ public class RecordService {
                 .orElseThrow(() -> new CustomException(ErrorCode.RECORD_NOT_FOUND));
     }
 
+    // url 정규화
+    private String normalizeUrl(String url) {
+        if (url == null) return null;
+        String normalized = url.trim();
+        if (normalized.endsWith("/")) {
+            normalized = normalized.substring(0, normalized.length() - 1);
+        }
+        return normalized;
+    }
     //  레코드 목록 조회
     public Page<com.teamalgo.algo.domain.record.Record> searchRecords(
             RecordSearchRequest req,
@@ -183,6 +192,7 @@ public class RecordService {
             if(isAuthenticated) {
             return recordRepository.findPopularWithFilters(
                     (req.getSearch() != null && !req.getSearch().isBlank()) ? "%" + req.getSearch() + "%" : null,
+                    (req.getUrl() != null && !req.getUrl().isBlank()) ? normalizeUrl(req.getUrl()) : null,
                     (req.getAuthor() != null && !req.getAuthor().isBlank()) ? req.getAuthor() : null,
                     (req.getCategory() != null && !req.getCategory().isBlank()) ? req.getCategory() : null,
                     start,
@@ -191,7 +201,7 @@ public class RecordService {
             );
         } else {
                 return recordRepository.findPopularWithFilters(
-                        null, null, null, start, end,
+                        null, null, null, null, null, null,
                         PageRequest.of(req.getPageIndex(), req.getSize())
                 );
             }
@@ -218,6 +228,14 @@ public class RecordService {
                             cb.like(root.get("customTitle"), keyword),
                             cb.like(problem.get("title"), keyword)
                     );
+                });
+            }
+
+            if (req.getUrl() != null && !req.getUrl().isBlank()) {
+                String normalizedUrl = normalizeUrl(req.getUrl());
+                spec = spec.and((root, query, cb) -> {
+                    Join<com.teamalgo.algo.domain.record.Record, Problem> problem = root.join("problem");
+                    return cb.equal(problem.get("url"), normalizedUrl);
                 });
             }
 
