@@ -7,6 +7,7 @@ import com.teamalgo.algo.global.exception.CustomException;
 import com.teamalgo.algo.domain.user.User;
 import com.teamalgo.algo.service.user.UserService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
@@ -16,6 +17,7 @@ import org.springframework.web.client.RestTemplate;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class GithubOAuthService {
@@ -86,6 +88,7 @@ public class GithubOAuthService {
             // JWT 발급
             return authService.issueTokens(user);
         } catch (Exception e) {
+            log.error("GitHub OAuth 처리 중 오류", e);
             throw new CustomException(ErrorCode.OAUTH_FAILED);
         }
     }
