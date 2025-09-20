@@ -20,7 +20,7 @@ public class RecordCoreIdea {
     private Record record;
 
     @Lob
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String content;
 
     public void update(String content) {

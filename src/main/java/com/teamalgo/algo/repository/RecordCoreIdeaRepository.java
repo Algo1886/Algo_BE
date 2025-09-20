@@ -13,15 +13,18 @@ import java.util.List;
 public interface RecordCoreIdeaRepository extends JpaRepository<RecordCoreIdea, Long> {
 
     // 특정 유저의 레코드에서 나온 아이디어 (draft 제외)
-    Page<RecordCoreIdea> findByRecordUserIdAndRecordIsDraftFalse(Long userId, Pageable pageable);
+    Page<RecordCoreIdea> findByRecordUserIdAndRecordIsDraftFalseAndContentIsNotNullAndContentNot(
+            Long userId, String empty, Pageable pageable);
+
 
     // 특정 카테고리 + draft 제외
-    Page<RecordCoreIdea> findByRecordUserIdAndRecordIsDraftFalseAndRecord_RecordCategories_Category_Name(
-            Long userId, String category, Pageable pageable);
+    Page<RecordCoreIdea> findByRecordUserIdAndRecordIsDraftFalseAndRecord_RecordCategories_Category_NameAndContentIsNotNullAndContentNot(
+            Long userId, String category, String empty, Pageable pageable);
+
 
     // 최신순 + draft 제외
-    Page<RecordCoreIdea> findByRecordUserIdAndRecordIsDraftFalseOrderByRecordCreatedAtDesc(
-            Long userId, Pageable pageable);
+    Page<RecordCoreIdea> findByRecordUserIdAndRecordIsDraftFalseAndContentIsNotNullAndContentNotOrderByRecordCreatedAtDesc(
+            Long userId, String empty, Pageable pageable);
 
     @Query("""
         SELECT c.name, COUNT(idea.id) as ideaCount

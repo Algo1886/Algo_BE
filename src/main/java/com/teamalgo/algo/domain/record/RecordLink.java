@@ -19,7 +19,7 @@ public class RecordLink {
     @JoinColumn(name = "record_id")
     private Record record;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String url;
 
     public void update(String url) {

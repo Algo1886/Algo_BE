@@ -26,6 +26,8 @@ public class RecordSearchRequest {
 
     private String search;    // 검색어
 
+    private String url;
+
     private String author;    // 작성자
 
     @DateTimeFormat(pattern = "yyyy-MM-dd")
