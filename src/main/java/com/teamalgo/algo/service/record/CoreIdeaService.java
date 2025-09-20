@@ -19,20 +19,21 @@ public class CoreIdeaService {
 
     // 핵심 아이디어 목록 조회 (카테고리 선택 X)
     public Page<CoreIdeaDTO> getUserIdeas(Long userId, Pageable pageable) {
-        return recordCoreIdeaRepository.findByRecordUserIdAndRecordIsDraftFalse(userId, pageable)
+        return recordCoreIdeaRepository
+                .findByRecordUserIdAndRecordIsDraftFalseAndContentIsNotNullAndContentNot(userId, "", pageable)
                 .map(CoreIdeaDTO::fromEntity);
     }
 
     // 핵심 아이디어 목록 조회 (카테고리 선택 O)
     public Page<CoreIdeaDTO> getUserIdeas(Long userId, Pageable pageable, String category) {
         if (category == null || category.isBlank()) {
-            return recordCoreIdeaRepository.findByRecordUserIdAndRecordIsDraftFalse(userId, pageable)
-                    .map(CoreIdeaDTO::fromEntity);
+            return getUserIdeas(userId, pageable);
         }
 
         return recordCoreIdeaRepository
-                .findByRecordUserIdAndRecordIsDraftFalseAndRecord_RecordCategories_Category_Name(
-                        userId, category, pageable)
+                .findByRecordUserIdAndRecordIsDraftFalseAndRecord_RecordCategories_Category_NameAndContentIsNotNullAndContentNot(
+                        userId, category, "", pageable
+                )
                 .map(CoreIdeaDTO::fromEntity);
     }
 
@@ -40,7 +41,9 @@ public class CoreIdeaService {
     public List<CoreIdeaDTO> getRecentIdeas(Long userId, int limit) {
         Pageable pageable = PageRequest.of(0, limit);
         return recordCoreIdeaRepository
-                .findByRecordUserIdAndRecordIsDraftFalseOrderByRecordCreatedAtDesc(userId, pageable)
+                .findByRecordUserIdAndRecordIsDraftFalseAndContentIsNotNullAndContentNotOrderByRecordCreatedAtDesc(
+                        userId, "", pageable
+                )
                 .stream()
                 .map(CoreIdeaDTO::fromEntity)
                 .toList();

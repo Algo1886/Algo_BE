@@ -74,7 +74,7 @@ public class RecordService {
 
                     return problemRepository.save(
                             Problem.builder()
-                                    .url(preview.getUrl())
+                                    .url(normalizeUrl(preview.getUrl()))
                                     .source(preview.getSource())
                                     .title(finalTitle)
                                     .numericId(ProblemSourceDetector.extractNumericId(preview.getUrl(), preview.getSource()))
@@ -116,16 +116,22 @@ public class RecordService {
 
         // Ideas
         if (req.getIdeas() != null) {
-            record.getIdeas().addAll(req.getIdeas().stream()
-                    .map(dto -> dto.toEntity(record))
-                    .toList());
+            record.getIdeas().addAll(
+                    req.getIdeas().stream()
+                            .filter(dto -> dto.getContent() != null && !dto.getContent().isBlank()) // 빈값 제외
+                            .map(dto -> dto.toEntity(record))
+                            .toList()
+            );
         }
 
         // Links
         if (req.getLinks() != null) {
-            record.getLinks().addAll(req.getLinks().stream()
-                    .map(dto -> dto.toEntity(record))
-                    .toList());
+            record.getLinks().addAll(
+                    req.getLinks().stream()
+                            .filter(dto -> dto.getUrl() != null && !dto.getUrl().isBlank()) // ✅ 빈값 제외
+                            .map(dto -> dto.toEntity(record))
+                            .toList()
+            );
         }
 
         // Categories
@@ -171,6 +177,15 @@ public class RecordService {
                 .orElseThrow(() -> new CustomException(ErrorCode.RECORD_NOT_FOUND));
     }
 
+    // url 정규화
+    private String normalizeUrl(String url) {
+        if (url == null) return null;
+        String normalized = url.trim();
+        if (normalized.endsWith("/")) {
+            normalized = normalized.substring(0, normalized.length() - 1);
+        }
+        return normalized;
+    }
     //  레코드 목록 조회
     public Page<com.teamalgo.algo.domain.record.Record> searchRecords(
             RecordSearchRequest req,
@@ -183,6 +198,7 @@ public class RecordService {
             if(isAuthenticated) {
             return recordRepository.findPopularWithFilters(
                     (req.getSearch() != null && !req.getSearch().isBlank()) ? "%" + req.getSearch() + "%" : null,
+                    (req.getUrl() != null && !req.getUrl().isBlank()) ? normalizeUrl(req.getUrl()) : null,
                     (req.getAuthor() != null && !req.getAuthor().isBlank()) ? req.getAuthor() : null,
                     (req.getCategory() != null && !req.getCategory().isBlank()) ? req.getCategory() : null,
                     start,
@@ -191,7 +207,7 @@ public class RecordService {
             );
         } else {
                 return recordRepository.findPopularWithFilters(
-                        null, null, null, start, end,
+                        null, null, null, null, null, null,
                         PageRequest.of(req.getPageIndex(), req.getSize())
                 );
             }
@@ -218,6 +234,14 @@ public class RecordService {
                             cb.like(root.get("customTitle"), keyword),
                             cb.like(problem.get("title"), keyword)
                     );
+                });
+            }
+
+            if (req.getUrl() != null && !req.getUrl().isBlank()) {
+                String normalizedUrl = normalizeUrl(req.getUrl());
+                spec = spec.and((root, query, cb) -> {
+                    Join<com.teamalgo.algo.domain.record.Record, Problem> problem = root.join("problem");
+                    return cb.equal(problem.get("url"), normalizedUrl);
                 });
             }
 
@@ -324,18 +348,24 @@ public class RecordService {
         if (req.getIdeas() != null) {
             record.getIdeas().clear();
             recordRepository.flush();
-            for (RecordCoreIdeaDTO dto : req.getIdeas()) {
-                record.getIdeas().add(dto.toEntity(record));
-            }
+            record.getIdeas().addAll(
+                    req.getIdeas().stream()
+                            .filter(dto -> dto.getContent() != null && !dto.getContent().isBlank()) // 빈 값 제외
+                            .map(dto -> dto.toEntity(record))
+                            .toList()
+            );
         }
 
         // Links
         if (req.getLinks() != null) {
             record.getLinks().clear();
             recordRepository.flush();
-            for (RecordLinkDTO dto : req.getLinks()) {
-                record.getLinks().add(dto.toEntity(record));
-            }
+            record.getLinks().addAll(
+                    req.getLinks().stream()
+                            .filter(dto -> dto.getUrl() != null && !dto.getUrl().isBlank()) // ✅ 빈값 제외
+                            .map(dto -> dto.toEntity(record))
+                            .toList()
+            );
         }
 
         // Categories
@@ -395,6 +425,16 @@ public class RecordService {
                 ? record.getCustomTitle()
                 : record.getProblem().getTitle();
 
+        List<RecordCoreIdeaDTO> ideas = record.getIdeas().stream()
+                .filter(i -> i.getContent() != null && !i.getContent().isBlank())
+                .map(RecordCoreIdeaDTO::fromEntity)
+                .toList();
+
+        List<RecordLinkDTO> links = record.getLinks().stream()
+                .filter(l -> l.getUrl() != null && !l.getUrl().isBlank())
+                .map(RecordLinkDTO::fromEntity)
+                .toList();
+
         return RecordResponse.Data.builder()
                 .id(record.getId())
                 .title(finalTitle)
@@ -406,8 +446,8 @@ public class RecordService {
                 .detail(record.getDetail())
                 .codes(record.getCodes().stream().map(RecordCodeDTO::fromEntity).toList())
                 .steps(record.getSteps().stream().map(RecordStepDTO::fromEntity).toList())
-                .ideas(record.getIdeas().stream().map(RecordCoreIdeaDTO::fromEntity).toList())
-                .links(record.getLinks().stream().map(RecordLinkDTO::fromEntity).toList())
+                .ideas(ideas.isEmpty() ? null : ideas)
+                .links(links.isEmpty() ? null : links)
                 .author(mapAuthor(record.getUser()))
                 .isDraft(record.isDraft())
                 .isPublished(record.isPublished())
