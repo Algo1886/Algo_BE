@@ -74,7 +74,7 @@ public class RecordService {
 
                     return problemRepository.save(
                             Problem.builder()
-                                    .url(preview.getUrl())
+                                    .url(normalizeUrl(preview.getUrl()))
                                     .source(preview.getSource())
                                     .title(finalTitle)
                                     .numericId(ProblemSourceDetector.extractNumericId(preview.getUrl(), preview.getSource()))
@@ -116,16 +116,22 @@ public class RecordService {
 
         // Ideas
         if (req.getIdeas() != null) {
-            record.getIdeas().addAll(req.getIdeas().stream()
-                    .map(dto -> dto.toEntity(record))
-                    .toList());
+            record.getIdeas().addAll(
+                    req.getIdeas().stream()
+                            .filter(dto -> dto.getContent() != null && !dto.getContent().isBlank()) // 빈값 제외
+                            .map(dto -> dto.toEntity(record))
+                            .toList()
+            );
         }
 
         // Links
         if (req.getLinks() != null) {
-            record.getLinks().addAll(req.getLinks().stream()
-                    .map(dto -> dto.toEntity(record))
-                    .toList());
+            record.getLinks().addAll(
+                    req.getLinks().stream()
+                            .filter(dto -> dto.getUrl() != null && !dto.getUrl().isBlank()) // ✅ 빈값 제외
+                            .map(dto -> dto.toEntity(record))
+                            .toList()
+            );
         }
 
         // Categories
@@ -342,18 +348,24 @@ public class RecordService {
         if (req.getIdeas() != null) {
             record.getIdeas().clear();
             recordRepository.flush();
-            for (RecordCoreIdeaDTO dto : req.getIdeas()) {
-                record.getIdeas().add(dto.toEntity(record));
-            }
+            record.getIdeas().addAll(
+                    req.getIdeas().stream()
+                            .filter(dto -> dto.getContent() != null && !dto.getContent().isBlank()) // 빈 값 제외
+                            .map(dto -> dto.toEntity(record))
+                            .toList()
+            );
         }
 
         // Links
         if (req.getLinks() != null) {
             record.getLinks().clear();
             recordRepository.flush();
-            for (RecordLinkDTO dto : req.getLinks()) {
-                record.getLinks().add(dto.toEntity(record));
-            }
+            record.getLinks().addAll(
+                    req.getLinks().stream()
+                            .filter(dto -> dto.getUrl() != null && !dto.getUrl().isBlank()) // ✅ 빈값 제외
+                            .map(dto -> dto.toEntity(record))
+                            .toList()
+            );
         }
 
         // Categories
@@ -413,6 +425,16 @@ public class RecordService {
                 ? record.getCustomTitle()
                 : record.getProblem().getTitle();
 
+        List<RecordCoreIdeaDTO> ideas = record.getIdeas().stream()
+                .filter(i -> i.getContent() != null && !i.getContent().isBlank())
+                .map(RecordCoreIdeaDTO::fromEntity)
+                .toList();
+
+        List<RecordLinkDTO> links = record.getLinks().stream()
+                .filter(l -> l.getUrl() != null && !l.getUrl().isBlank())
+                .map(RecordLinkDTO::fromEntity)
+                .toList();
+
         return RecordResponse.Data.builder()
                 .id(record.getId())
                 .title(finalTitle)
@@ -424,8 +446,8 @@ public class RecordService {
                 .detail(record.getDetail())
                 .codes(record.getCodes().stream().map(RecordCodeDTO::fromEntity).toList())
                 .steps(record.getSteps().stream().map(RecordStepDTO::fromEntity).toList())
-                .ideas(record.getIdeas().stream().map(RecordCoreIdeaDTO::fromEntity).toList())
-                .links(record.getLinks().stream().map(RecordLinkDTO::fromEntity).toList())
+                .ideas(ideas.isEmpty() ? null : ideas)
+                .links(links.isEmpty() ? null : links)
                 .author(mapAuthor(record.getUser()))
                 .isDraft(record.isDraft())
                 .isPublished(record.isPublished())
