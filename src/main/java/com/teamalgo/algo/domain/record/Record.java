@@ -39,7 +39,7 @@ public class Record extends BaseEntity {
 
     private Integer difficulty;
 
-    @Lob
+    @Column(columnDefinition = "TEXT")
     private String detail;
 
     @Column(name = "is_draft", nullable = false)

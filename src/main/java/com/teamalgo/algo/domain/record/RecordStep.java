@@ -25,8 +25,7 @@ public class RecordStep {
     @Column(nullable = false)
     private int stepOrder;
 
-    @Lob
-    @Column(nullable = false)
+    @Column(columnDefinition = "TEXT", nullable = false)
     private String text;
 
     public void update(int stepOrder, String text) {
