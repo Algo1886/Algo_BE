@@ -24,8 +24,7 @@ public class RecordCode {
     @Column(nullable = false)
     private String language;
 
-    @Lob
-    @Column(nullable = false)
+    @Column(columnDefinition = "TEXT", nullable = false)
     private String code;
 
     @Column(nullable = false)

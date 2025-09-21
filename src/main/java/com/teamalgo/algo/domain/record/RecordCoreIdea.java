@@ -19,8 +19,7 @@ public class RecordCoreIdea {
     @JoinColumn(name = "record_id")
     private Record record;
 
-    @Lob
-    @Column(nullable = true)
+    @Column(columnDefinition = "TEXT", nullable = true)
     private String content;
 
     public void update(String content) {
