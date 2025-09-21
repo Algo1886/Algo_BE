@@ -22,17 +22,10 @@ import com.teamalgo.algo.domain.record.Record;
 public class RecordCodeDTO {
     private Long id; // Create 시 null, Update/Response 시 존재
 
-    @NotBlank(message = "Code cannot be blank")
     private String code;
-
-    @NotBlank(message = "Language cannot be blank")
     private String language;
-
-    @NotBlank(message = "Verdict cannot be blank")
-    @Pattern(regexp = "pass|fail", message = "Verdict must be 'pass' or 'fail'")
     private String verdict;
 
-    @Min(value = 0, message = "Snippet order must be 0 or greater")
     private int snippetOrder;
 
     public RecordCode toEntity(Record record) {

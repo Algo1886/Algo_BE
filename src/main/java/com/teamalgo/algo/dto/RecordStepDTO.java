@@ -14,7 +14,6 @@ public class RecordStepDTO {
     private Long id;       // update/삭제 시 필요
     private int stepOrder; // 단계 순서
 
-    @NotBlank(message = "Step text cannot be blank")
     private String text;
 
     public RecordStep toEntity(Record record) {
