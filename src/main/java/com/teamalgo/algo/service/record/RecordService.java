@@ -60,6 +60,29 @@ public class RecordService {
     // 레코드 생성
     @Transactional
     public com.teamalgo.algo.domain.record.Record createRecord(User user, RecordCreateRequest req) {
+
+        if (!req.isDraft()) {
+            if (req.getDetail() == null || req.getDetail().isBlank()) {
+                throw new CustomException(ErrorCode.INVALID_DETAIL);
+            }
+            if (req.getCategories() == null || req.getCategories().isEmpty()) {
+                throw new CustomException(ErrorCode.INVALID_CATEGORIES);
+            }
+            if (req.getStatus() == null ||
+                    (!req.getStatus().equals("success") && !req.getStatus().equals("fail"))) {
+                throw new CustomException(ErrorCode.INVALID_STATUS);
+            }
+            if (req.getDifficulty() == null || req.getDifficulty() < 1 || req.getDifficulty() > 5) {
+                throw new CustomException(ErrorCode.INVALID_DIFFICULTY);
+            }
+            if (req.getCodes() == null || req.getCodes().isEmpty()) {
+                throw new CustomException(ErrorCode.INVALID_CODES);
+            }
+            if (req.getSteps() == null || req.getSteps().isEmpty()) {
+                throw new CustomException(ErrorCode.INVALID_STEPS);
+            }
+        }
+
         Problem problem = problemRepository.findByUrl(req.getProblemUrl())
                 .orElseGet(() -> {
                     ProblemPreviewResponse preview = problemService.fetchProblemInfo(req.getProblemUrl());
@@ -155,7 +178,7 @@ public class RecordService {
             record.getRecordCategories().addAll(recordCategories);
         }
 
-        boolean isSuccess = record.getStatus().equals("success");
+        boolean isSuccess = "success".equals(record.getStatus());
 
         // 임시 저장 아닐때만 통계 반영
         if (!record.isDraft()) {
@@ -291,6 +314,29 @@ public class RecordService {
             throw new CustomException(ErrorCode.ACCESS_DENIED);
         }
 
+        boolean isDraft = (req.getIsDraft() != null && req.getIsDraft());
+
+        if (!isDraft) {
+            if (req.getDetail() == null || req.getDetail().isBlank()) {
+                throw new CustomException(ErrorCode.INVALID_DETAIL);
+            }
+            if (req.getCategories() == null || req.getCategories().isEmpty()) {
+                throw new CustomException(ErrorCode.INVALID_CATEGORIES);
+            }
+            if (req.getStatus() == null ||
+                    (!req.getStatus().equals("success") && !req.getStatus().equals("fail"))) {
+                throw new CustomException(ErrorCode.INVALID_STATUS);
+            }
+            if (req.getDifficulty() == null || req.getDifficulty() < 1 || req.getDifficulty() > 5) {
+                throw new CustomException(ErrorCode.INVALID_DIFFICULTY);
+            }
+            if (req.getCodes() == null || req.getCodes().isEmpty()) {
+                throw new CustomException(ErrorCode.INVALID_CODES);
+            }
+            if (req.getSteps() == null || req.getSteps().isEmpty()) {
+                throw new CustomException(ErrorCode.INVALID_STEPS);
+            }
+        }
 
         boolean prevDraft = record.isDraft();
 
@@ -317,7 +363,7 @@ public class RecordService {
         // Codes
         if (req.getCodes() != null) {
             if (req.getCodes().isEmpty()) {
-                throw new CustomException(ErrorCode.INVALID_REQUEST);
+                throw new CustomException(ErrorCode.INVALID_CODES);
             }
             record.getCodes().clear();
             recordRepository.flush();
@@ -332,7 +378,7 @@ public class RecordService {
         // Steps
         if (req.getSteps() != null) {
             if (req.getSteps().isEmpty()) {
-                throw new CustomException(ErrorCode.INVALID_REQUEST);
+                throw new CustomException(ErrorCode.INVALID_STEPS);
             }
             record.getSteps().clear();
             recordRepository.flush();
@@ -391,7 +437,7 @@ public class RecordService {
 
         // 임시저장 -> 발행으로 전환된 경우 통계 반영
         if (prevDraft && !record.isDraft()) {
-            boolean isSuccess = record.getStatus().equals("success");
+            boolean isSuccess = "success".equals(record.getStatus());
             statsService.increaseStats(user, isSuccess);
         }
 
@@ -414,7 +460,7 @@ public class RecordService {
         if (!record.isDraft()) {
             // 통계 반영
             LocalDate date = record.getCreatedAt().toLocalDate();
-            boolean isSuccess = record.getStatus().equals("success");
+            boolean isSuccess = "success".equals(record.getStatus());
             statsService.decreaseStats(user, date, isSuccess);
         }
     }

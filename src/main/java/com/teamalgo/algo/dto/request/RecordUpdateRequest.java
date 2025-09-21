@@ -6,8 +6,7 @@ import com.teamalgo.algo.dto.RecordCoreIdeaDTO;
 import com.teamalgo.algo.dto.RecordLinkDTO;
 import com.teamalgo.algo.dto.RecordStepDTO;
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -26,11 +25,9 @@ public class RecordUpdateRequest {
     @Schema(description = "상세 설명")
     private String detail;
 
-    @Size(min = 1, message = "At least one code is required if provided")
     @Schema(description = "코드 스니펫 목록")
     private List<RecordCodeDTO> codes;
 
-    @Size(min = 1, message = "At least one step is required if provided")
     @Schema(description = "풀이 단계 목록")
     private List<RecordStepDTO> steps;
 
@@ -42,6 +39,9 @@ public class RecordUpdateRequest {
 
     @Schema(description = "카테고리 목록", example = "[\"DP\", \"Graph\"]")
     private List<String> categories;
+
+    private String status;
+    private Integer difficulty;
 
     @JsonProperty("draft")
     @Schema(description = "임시 저장 여부", example = "true")
