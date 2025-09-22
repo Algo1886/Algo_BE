@@ -17,7 +17,7 @@ public class ProblemSourceDetector {
         if (url.contains("codeforces.com")) return "코드포스";
         if (url.contains("swexpertacademy.com")) return "SW Expert Academy";
         if (url.contains("leetcode.com")) return "리트코드";
-        return "unknown";
+        return "기타";
     }
 
     public static Long extractNumericId(String url, String source) {

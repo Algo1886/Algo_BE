@@ -83,6 +83,12 @@ public class RecordService {
             }
         }
 
+        String source = ProblemSourceDetector.detectSource(req.getProblemUrl());
+
+        if (!"백준".equals(source) && !"프로그래머스".equals(source) && (req.getCustomTitle() == null || req.getCustomTitle().isBlank())) {
+            throw new CustomException(ErrorCode.MISSING_TITLE);
+        }
+
         Problem problem = problemRepository.findByUrl(req.getProblemUrl())
                 .orElseGet(() -> {
                     ProblemPreviewResponse preview = problemService.fetchProblemInfo(req.getProblemUrl());
@@ -92,13 +98,13 @@ public class RecordService {
                             : req.getCustomTitle();
 
                     if (finalTitle == null || finalTitle.isBlank()) {
-                        throw new CustomException(ErrorCode.INVALID_REQUEST);
+                        throw new CustomException(ErrorCode.MISSING_TITLE);
                     }
 
                     return problemRepository.save(
                             Problem.builder()
                                     .url(normalizeUrl(preview.getUrl()))
-                                    .source(preview.getSource())
+                                    .source(source)
                                     .title(finalTitle)
                                     .numericId(ProblemSourceDetector.extractNumericId(preview.getUrl(), preview.getSource()))
                                     .slugId(ProblemSourceDetector.extractSlugId(preview.getUrl(), preview.getSource()))
@@ -141,7 +147,7 @@ public class RecordService {
         if (req.getIdeas() != null) {
             record.getIdeas().addAll(
                     req.getIdeas().stream()
-                            .filter(dto -> dto.getContent() != null && !dto.getContent().isBlank()) // 빈값 제외
+                            .filter(dto -> dto.getContent() != null && !dto.getContent().isBlank())
                             .map(dto -> dto.toEntity(record))
                             .toList()
             );
@@ -151,7 +157,7 @@ public class RecordService {
         if (req.getLinks() != null) {
             record.getLinks().addAll(
                     req.getLinks().stream()
-                            .filter(dto -> dto.getUrl() != null && !dto.getUrl().isBlank()) // ✅ 빈값 제외
+                            .filter(dto -> dto.getUrl() != null && !dto.getUrl().isBlank())
                             .map(dto -> dto.toEntity(record))
                             .toList()
             );
@@ -360,6 +366,11 @@ public class RecordService {
             record.updatePublished(req.getIsPublished());
         }
 
+        // Status
+        if (req.getStatus() != null) {
+            record.updateStatus(req.getStatus());
+        }
+
         // Codes
         if (req.getCodes() != null) {
             if (req.getCodes().isEmpty()) {
@@ -396,7 +407,7 @@ public class RecordService {
             recordRepository.flush();
             record.getIdeas().addAll(
                     req.getIdeas().stream()
-                            .filter(dto -> dto.getContent() != null && !dto.getContent().isBlank()) // 빈 값 제외
+                            .filter(dto -> dto.getContent() != null && !dto.getContent().isBlank())
                             .map(dto -> dto.toEntity(record))
                             .toList()
             );
@@ -408,7 +419,7 @@ public class RecordService {
             recordRepository.flush();
             record.getLinks().addAll(
                     req.getLinks().stream()
-                            .filter(dto -> dto.getUrl() != null && !dto.getUrl().isBlank()) // ✅ 빈값 제외
+                            .filter(dto -> dto.getUrl() != null && !dto.getUrl().isBlank())
                             .map(dto -> dto.toEntity(record))
                             .toList()
             );
