@@ -27,7 +27,8 @@ public enum ErrorCode implements BaseCode {
     INVALID_CODES(HttpStatus.BAD_REQUEST, "코드는 최소 1개 이상 필요합니다."),
     INVALID_STEPS(HttpStatus.BAD_REQUEST, "풀이 단계는 최소 1개 이상 필요합니다."),
     INVALID_CATEGORIES(HttpStatus.BAD_REQUEST, "카테고리는 최소 1개 이상 필요합니다."),
-    INVALID_DETAIL(HttpStatus.BAD_REQUEST, "상세 설명은 비워둘 수 없습니다.");
+    INVALID_DETAIL(HttpStatus.BAD_REQUEST, "상세 설명은 비워둘 수 없습니다."),
+    INVALID_FILE_TYPE(HttpStatus.BAD_REQUEST, "허용되지 않은 이미지 형식입니다.");
 
     private final HttpStatus status;
     private final String message;
