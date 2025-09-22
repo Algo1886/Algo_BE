@@ -21,6 +21,7 @@ public enum ErrorCode implements BaseCode {
     IMAGE_UPLOAD_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "이미지 업로드에 실패했습니다."),
     INVALID_IMAGE_TYPE(HttpStatus.BAD_REQUEST, "허용되지 않는 이미지 형식입니다."),
 
+    MISSING_TITLE(HttpStatus.BAD_REQUEST, "제목을 입력해주세요."),
     // 레코드 발행 시 에러
     INVALID_STATUS(HttpStatus.BAD_REQUEST, "Status 값은 success 또는 fail 이어야 합니다."),
     INVALID_DIFFICULTY(HttpStatus.BAD_REQUEST, "난이도는 1~5 사이여야 합니다."),
