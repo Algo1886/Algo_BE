@@ -108,4 +108,6 @@ public class Record extends BaseEntity {
     public void updateCustomTitle(String customTitle) {
         this.customTitle = customTitle;
     }
+
+    public void updateStatus(String status) { this.status = status; }
 }
