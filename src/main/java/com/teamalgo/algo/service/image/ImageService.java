@@ -11,6 +11,7 @@ import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -25,8 +26,22 @@ public class ImageService {
     @Value("${cloud.aws.region.static}")
     private String region;
 
+    private static final List<String> ALLOWED_EXTENSIONS = List.of("jpg", "jpeg", "png", "gif");
+
+
     public String uploadImage(MultipartFile file) {
-        String fileName = UUID.randomUUID() + "-" + file.getOriginalFilename();
+        String originalName = file.getOriginalFilename();
+        if (originalName == null || !originalName.contains(".")) {
+            throw new CustomException(ErrorCode.INVALID_FILE_TYPE);
+        }
+
+        String ext = originalName.substring(originalName.lastIndexOf(".") + 1).toLowerCase();
+
+        if(!ALLOWED_EXTENSIONS.contains(ext)) {
+            throw new CustomException(ErrorCode.INVALID_FILE_TYPE);
+        }
+
+        String fileName = System.currentTimeMillis() + "-" + UUID.randomUUID() + ext;
 
         try {
             PutObjectRequest putObjectRequest = PutObjectRequest.builder()
