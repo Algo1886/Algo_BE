@@ -127,6 +127,10 @@ public class RecordService {
         if (req.getCodes() != null) {
             AtomicInteger order = new AtomicInteger(0);
             for (RecordCodeDTO dto : req.getCodes()) {
+                if (dto.getVerdict() == null ||
+                        (!dto.getVerdict().equals("success") && !dto.getVerdict().equals("fail"))) {
+                    throw new CustomException(ErrorCode.INVALID_VERDICT);
+                }
                 RecordCode entity = dto.toEntity(record);
                 entity.update(dto.getLanguage(), dto.getCode(), dto.getVerdict(), order.getAndIncrement());
                 record.getCodes().add(entity);
@@ -346,6 +350,34 @@ public class RecordService {
 
         boolean prevDraft = record.isDraft();
 
+        if (req.getProblemUrl() != null && !req.getProblemUrl().isBlank()) {
+            String normalizedUrl = normalizeUrl(req.getProblemUrl());
+
+            ProblemPreviewResponse preview = problemService.fetchProblemInfo(normalizedUrl);
+            String source = ProblemSourceDetector.detectSource(normalizedUrl);
+
+            String finalTitle = (preview.getTitle() != null && !preview.getTitle().isBlank())
+                    ? preview.getTitle()
+                    : req.getCustomTitle();
+
+            if (finalTitle == null || finalTitle.isBlank()) {
+                throw new CustomException(ErrorCode.MISSING_TITLE);
+            }
+
+            Problem problem = problemRepository.findByUrl(normalizedUrl)
+                    .orElseGet(() -> problemRepository.save(
+                            Problem.builder()
+                                    .url(normalizedUrl)
+                                    .source(source)
+                                    .title(finalTitle)
+                                    .numericId(ProblemSourceDetector.extractNumericId(normalizedUrl, source))
+                                    .slugId(ProblemSourceDetector.extractSlugId(normalizedUrl, source))
+                                    .build()
+                    ));
+
+            record.updateProblem(problem);
+        }
+
         // Custom title
         if (req.getCustomTitle() != null) {
             record.updateCustomTitle(req.getCustomTitle());
@@ -380,6 +412,10 @@ public class RecordService {
             recordRepository.flush();
             AtomicInteger order = new AtomicInteger(0);
             for (RecordCodeDTO dto : req.getCodes()) {
+                if (dto.getVerdict() == null ||
+                        (!dto.getVerdict().equals("success") && !dto.getVerdict().equals("fail"))) {
+                    throw new CustomException(ErrorCode.INVALID_VERDICT);
+                }
                 RecordCode entity = dto.toEntity(record);
                 entity.update(dto.getLanguage(), dto.getCode(), dto.getVerdict(), order.getAndIncrement());
                 record.getCodes().add(entity);

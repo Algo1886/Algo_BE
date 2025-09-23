@@ -24,6 +24,7 @@ public enum ErrorCode implements BaseCode {
     MISSING_TITLE(HttpStatus.BAD_REQUEST, "제목을 입력해주세요."),
     // 레코드 발행 시 에러
     INVALID_STATUS(HttpStatus.BAD_REQUEST, "Status 값은 success 또는 fail 이어야 합니다."),
+    INVALID_VERDICT(HttpStatus.BAD_REQUEST, "Verdict 값은 success 또는 fail 이어야 합니다."),
     INVALID_DIFFICULTY(HttpStatus.BAD_REQUEST, "난이도는 1~5 사이여야 합니다."),
     INVALID_CODES(HttpStatus.BAD_REQUEST, "코드는 최소 1개 이상 필요합니다."),
     INVALID_STEPS(HttpStatus.BAD_REQUEST, "풀이 단계는 최소 1개 이상 필요합니다."),

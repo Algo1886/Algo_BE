@@ -19,6 +19,8 @@ import java.util.List;
 @Schema(description = "레코드 수정 요청 DTO (전체 교체)")
 public class RecordUpdateRequest {
 
+    private String problemUrl;
+
     @Schema(description = "사용자 커스텀 제목")
     private String customTitle;
 
