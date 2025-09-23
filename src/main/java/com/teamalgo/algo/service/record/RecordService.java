@@ -127,6 +127,10 @@ public class RecordService {
         if (req.getCodes() != null) {
             AtomicInteger order = new AtomicInteger(0);
             for (RecordCodeDTO dto : req.getCodes()) {
+                if (dto.getVerdict() == null ||
+                        (!dto.getVerdict().equals("success") && !dto.getVerdict().equals("fail"))) {
+                    throw new CustomException(ErrorCode.INVALID_VERDICT);
+                }
                 RecordCode entity = dto.toEntity(record);
                 entity.update(dto.getLanguage(), dto.getCode(), dto.getVerdict(), order.getAndIncrement());
                 record.getCodes().add(entity);
@@ -408,6 +412,10 @@ public class RecordService {
             recordRepository.flush();
             AtomicInteger order = new AtomicInteger(0);
             for (RecordCodeDTO dto : req.getCodes()) {
+                if (dto.getVerdict() == null ||
+                        (!dto.getVerdict().equals("success") && !dto.getVerdict().equals("fail"))) {
+                    throw new CustomException(ErrorCode.INVALID_VERDICT);
+                }
                 RecordCode entity = dto.toEntity(record);
                 entity.update(dto.getLanguage(), dto.getCode(), dto.getVerdict(), order.getAndIncrement());
                 record.getCodes().add(entity);
