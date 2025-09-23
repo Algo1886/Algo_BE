@@ -6,6 +6,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
+import java.time.LocalDate;
+
 @Getter
 @Builder
 @AllArgsConstructor
@@ -13,6 +15,7 @@ public class UserResponse {
     private Long id;
     private String username;
     private String avatarUrl;
+    private LocalDate createdAt;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private Integer streak;
@@ -22,6 +25,7 @@ public class UserResponse {
                 .id(user.getId())
                 .username(user.getUsername())
                 .avatarUrl(user.getAvatarUrl())
+                .createdAt(user.getCreatedAt().toLocalDate())
                 .build();
     }
 
@@ -30,6 +34,7 @@ public class UserResponse {
                 .id(user.getId())
                 .username(user.getUsername())
                 .avatarUrl(user.getAvatarUrl())
+                .createdAt(user.getCreatedAt().toLocalDate())
                 .streak(streak)
                 .build();
     }
