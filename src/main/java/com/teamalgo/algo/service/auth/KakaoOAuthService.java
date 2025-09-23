@@ -32,12 +32,23 @@ public class KakaoOAuthService {
     @Value("${KAKAO_CLIENT_ID}")
     private String kakaoClientId;
 
-    @Value("${KAKAO_REDIRECT_URI}")
-    private String kakaoRedirectUri;
+    @Value("${KAKAO_REDIRECT_URI_LOCAL}")
+    private String kakaoRedirectUriLocal;
+
+    @Value("${KAKAO_REDIRECT_URI_SERVER}")
+    private String kakaoRedirectUriServer;
+
+    @Value("${FRONT_ORIGIN_LOCAL}")
+    private String frontOriginLocal;
+
+    @Value("${FRONT_ORIGIN_SERVER}")
+    private String frontOriginServer;
 
     @Transactional
-    public TokenResponse authenticateUser(String code) {
+    public TokenResponse authenticateUser(String code, String origin) {
         try {
+            String redirectUri = resolveRedirectUri(origin);
+
             // 1) 인가 코드 → access_token 교환
             String tokenUrl = "https://kauth.kakao.com/oauth/token";
 
@@ -47,7 +58,7 @@ public class KakaoOAuthService {
             MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
             params.add("grant_type", "authorization_code");
             params.add("client_id", kakaoClientId);
-            params.add("redirect_uri", kakaoRedirectUri);
+            params.add("redirect_uri", redirectUri);
             params.add("code", code);
 
             HttpEntity<MultiValueMap<String, String>> tokenRequest = new HttpEntity<>(params, headers);
@@ -55,7 +66,8 @@ public class KakaoOAuthService {
 
             JsonNode tokenNode = objectMapper.readTree(tokenResponse.getBody());
             if (!tokenNode.has("access_token")) {
-                throw new RuntimeException("카카오 access_token 발급 실패: " + tokenResponse.getBody());
+                log.error("카카오 access_token 누락");
+                throw new CustomException(ErrorCode.OAUTH_FAILED);
             }
             String kakaoAccessToken = tokenNode.get("access_token").asText();
 
@@ -73,31 +85,42 @@ public class KakaoOAuthService {
 
             JsonNode root = objectMapper.readTree(userResponse.getBody());
             if (!root.hasNonNull("id")) {
-                throw new RuntimeException("카카오 응답에 id가 없습니다.");
+                log.error("카카오 사용자 응답 오류: {}", userResponse.getBody());
+                throw new CustomException(ErrorCode.OAUTH_FAILED);
             }
 
             String providerId = root.get("id").asText();
 
             // 3) 닉네임 결정 (재할당 대신 최종값 변수 하나로만 사용)
-            String avatarUrl = null;
-            if (root.has("kakao_account")
-                    && root.get("kakao_account").has("profile")
-                    && root.get("kakao_account").get("profile").has("profile_image_url")) {
-                avatarUrl = root.get("kakao_account").get("profile").get("profile_image_url").asText(null);
-            }
-
-            final String finalAvatarUrl = avatarUrl;
+            String avatarUrl = root.path("kakao_account")
+                    .path("profile")
+                    .path("profile_image_url")
+                    .asText(null);
 
             // 4) DB 저장 or 조회
             User user = userService.findByProviderAndProviderId("kakao", providerId)
-                    .orElseGet(() -> userService.createUser("kakao", providerId, finalAvatarUrl));
+                    .orElseGet(() -> userService.createUser("kakao", providerId, avatarUrl));
 
             // 5) JWT 발급
             return authService.issueTokens(user);
 
+        } catch (CustomException e) {
+            throw e;
         } catch (Exception e) {
             log.error("카카오 로그인 처리 중 오류 발생", e);
             throw new CustomException(ErrorCode.OAUTH_FAILED);
+        }
+    }
+
+    public String resolveRedirectUri(String origin) {
+        if (origin == null) {
+            throw new CustomException(ErrorCode.INVALID_REDIRECT_URI);
+        } else if (origin.equals(frontOriginLocal)) {
+            return kakaoRedirectUriLocal;
+        } else if (origin.equals(frontOriginServer)) {
+            return kakaoRedirectUriServer;
+        } else {
+            throw new CustomException(ErrorCode.INVALID_REDIRECT_URI);
         }
     }
 }
