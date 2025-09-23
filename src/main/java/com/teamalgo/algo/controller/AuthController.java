@@ -9,6 +9,7 @@ import com.teamalgo.algo.service.auth.GoogleOAuthService;
 import com.teamalgo.algo.service.auth.KakaoOAuthService;
 import com.teamalgo.algo.global.common.api.ApiResponse;
 import com.teamalgo.algo.global.common.code.SuccessCode;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -33,8 +34,12 @@ public class AuthController {
 
     // 카카오 로그인
     @PostMapping("/kakao-login")
-    public ResponseEntity<ApiResponse<TokenResponse>> kakaoLogin(@RequestBody LoginRequest loginRequest) {
-        TokenResponse response = kakaoOAuthService.authenticateUser(loginRequest.getToken());
+    public ResponseEntity<ApiResponse<TokenResponse>> kakaoLogin(
+            @RequestBody LoginRequest loginRequest,
+            HttpServletRequest request
+    ) {
+        String origin = request.getHeader("Origin");
+        TokenResponse response = kakaoOAuthService.authenticateUser(loginRequest.getToken(), origin);
         return ApiResponse.success(SuccessCode._OK, response);
     }
 

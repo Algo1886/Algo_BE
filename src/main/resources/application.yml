@@ -38,6 +38,3 @@ cloud:
       static: ${AWS_REGION}
     s3:
       bucket: ${AWS_S3_BUCKET}
-
-kakao:
-  client-id: ${KAKAO_CLIENT_ID}
