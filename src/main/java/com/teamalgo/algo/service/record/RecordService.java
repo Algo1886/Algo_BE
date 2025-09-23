@@ -346,6 +346,34 @@ public class RecordService {
 
         boolean prevDraft = record.isDraft();
 
+        if (req.getProblemUrl() != null && !req.getProblemUrl().isBlank()) {
+            String normalizedUrl = normalizeUrl(req.getProblemUrl());
+
+            ProblemPreviewResponse preview = problemService.fetchProblemInfo(normalizedUrl);
+            String source = ProblemSourceDetector.detectSource(normalizedUrl);
+
+            String finalTitle = (preview.getTitle() != null && !preview.getTitle().isBlank())
+                    ? preview.getTitle()
+                    : req.getCustomTitle();
+
+            if (finalTitle == null || finalTitle.isBlank()) {
+                throw new CustomException(ErrorCode.MISSING_TITLE);
+            }
+
+            Problem problem = problemRepository.findByUrl(normalizedUrl)
+                    .orElseGet(() -> problemRepository.save(
+                            Problem.builder()
+                                    .url(normalizedUrl)
+                                    .source(source)
+                                    .title(finalTitle)
+                                    .numericId(ProblemSourceDetector.extractNumericId(normalizedUrl, source))
+                                    .slugId(ProblemSourceDetector.extractSlugId(normalizedUrl, source))
+                                    .build()
+                    ));
+
+            record.updateProblem(problem);
+        }
+
         // Custom title
         if (req.getCustomTitle() != null) {
             record.updateCustomTitle(req.getCustomTitle());
