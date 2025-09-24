@@ -68,12 +68,16 @@ public class BookmarkService {
                     .map(Bookmark::getRecord);
         }
 
+        if (records.isEmpty()) {
+            return new PageImpl<>(List.of(), pageable, 0);
+        }
+
         List<RecordDTO> filtered = records.stream()
                 .filter(record -> filterByOwnerType(record, user, ownerType))
                 .map(RecordDTO::from)
                 .toList();
 
-        return new PageImpl<>(filtered, pageable, records.getTotalElements());
+        return new PageImpl<>(filtered, pageable, filtered.size());
     }
 
     // 작성자 기준 필터링

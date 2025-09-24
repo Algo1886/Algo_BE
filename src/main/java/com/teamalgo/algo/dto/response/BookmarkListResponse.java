@@ -18,6 +18,7 @@ public class BookmarkListResponse {
     private boolean first;
     private boolean last;
 
+
     public static BookmarkListResponse fromPage(org.springframework.data.domain.Page<RecordDTO> pageData) {
         return BookmarkListResponse.builder()
                 .bookmarks(pageData.getContent())
