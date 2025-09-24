@@ -221,14 +221,12 @@ public class RecordService {
     }
     //  레코드 목록 조회
     public Page<com.teamalgo.algo.domain.record.Record> searchRecords(
-            RecordSearchRequest req,
-            boolean isAuthenticated
+            RecordSearchRequest req
     ) {
         if (req.getSort() == RecordSearchRequest.SortType.POPULAR) {
             LocalDateTime start = req.getStartDate() != null ? req.getStartDate().atStartOfDay() : null;
             LocalDateTime end = req.getEndDate() != null ? req.getEndDate().plusDays(1).atStartOfDay().minusNanos(1) : null;
 
-            if(isAuthenticated) {
             return recordRepository.findPopularWithFilters(
                     (req.getSearch() != null && !req.getSearch().isBlank()) ? "%" + req.getSearch() + "%" : null,
                     (req.getUrl() != null && !req.getUrl().isBlank()) ? normalizeUrl(req.getUrl()) : null,
@@ -238,19 +236,13 @@ public class RecordService {
                     end,
                     PageRequest.of(req.getPageIndex(), req.getSize())
             );
-        } else {
-                return recordRepository.findPopularWithFilters(
-                        null, null, null, null, null, null,
-                        PageRequest.of(req.getPageIndex(), req.getSize())
-                );
-            }
         }
-
         Sort sort = (req.getSort() == RecordSearchRequest.SortType.LATEST)
                 ? Sort.by(Sort.Direction.DESC, "createdAt")
                 : Sort.by(Sort.Direction.DESC, "id");
 
         Pageable pageable = PageRequest.of(req.getPageIndex(), req.getSize(), sort);
+
         Specification<com.teamalgo.algo.domain.record.Record> spec = Specification.where(
                 (root, query, cb) -> cb.and(
                         cb.isFalse(root.get("isDraft")),
@@ -258,14 +250,20 @@ public class RecordService {
                 )
         );
 
-        if (isAuthenticated) {
-            if (req.getSearch() != null && !req.getSearch().isBlank()) {
+
+        if (req.getSearch() != null && !req.getSearch().isBlank()) {
                 String keyword = "%" + req.getSearch() + "%";
                 spec = spec.and((root, query, cb) -> {
                     Join<com.teamalgo.algo.domain.record.Record, Problem> problem = root.join("problem");
-                    return cb.or(
-                            cb.like(root.get("customTitle"), keyword),
-                            cb.like(problem.get("title"), keyword)
+                    return cb.like(
+                            cb.selectCase()
+                                    .when(cb.and(
+                                            cb.isNotNull(root.get("customTitle")),
+                                            cb.notEqual(root.get("customTitle"), "")
+                                    ), root.get("customTitle"))
+                                    .otherwise(problem.get("title"))
+                                    .as(String.class),
+                            keyword
                     );
                 });
             }
@@ -299,7 +297,7 @@ public class RecordService {
                 spec = spec.and((root, query, cb) ->
                         cb.between(root.get("createdAt"), start, end.minusNanos(1)));
             }
-        }
+
 
         return recordRepository.findAll(spec, pageable);
     }
