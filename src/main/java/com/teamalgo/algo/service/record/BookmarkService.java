@@ -9,10 +9,13 @@ import com.teamalgo.algo.repository.BookmarkRepository;
 import com.teamalgo.algo.repository.RecordRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -52,22 +55,39 @@ public class BookmarkService {
         return bookmarkRepository.existsByUserAndRecordAndRecordIsDraftFalse(user, record);
     }
 
-    // 북마크한 레코드 목록 조회 (카테고리 선택 X)
-    public Page<RecordDTO> getBookmarkedRecords(User user, Pageable pageable) {
-        return bookmarkRepository.findByUserAndRecordIsDraftFalse(user, pageable)
-                .map(bookmark -> RecordDTO.from(bookmark.getRecord()));
-    }
+    // 북마크한 레코드 목록 조회 (category, 작성자 필터링)
+    public Page<RecordDTO> getBookmarkedRecords(User user, Pageable pageable, String category, String ownerType) {
+        Page<Record> records;
 
-    // 북마크한 레코드 목록 조회 (카테고리 선택 O)
-    public Page<RecordDTO> getBookmarkedRecords(User user, Pageable pageable, String category) {
         if (category == null || category.isBlank()) {
-            return bookmarkRepository.findByUserAndRecordIsDraftFalse(user, pageable)
-                    .map(bookmark -> RecordDTO.from(bookmark.getRecord()));
+            records = bookmarkRepository.findByUserAndRecordIsDraftFalse(user, pageable)
+                    .map(Bookmark::getRecord);
+        } else {
+            records = bookmarkRepository.findByUserAndRecordIsDraftFalseAndRecord_RecordCategories_Category_Name(
+                            user, category, pageable)
+                    .map(Bookmark::getRecord);
         }
 
-        return bookmarkRepository.findByUserAndRecordIsDraftFalseAndRecord_RecordCategories_Category_Name(
-                        user, category, pageable)
-                .map(bookmark -> RecordDTO.from(bookmark.getRecord()));
+        if (records.isEmpty()) {
+            return new PageImpl<>(List.of(), pageable, 0);
+        }
+
+        List<RecordDTO> filtered = records.stream()
+                .filter(record -> filterByOwnerType(record, user, ownerType))
+                .map(RecordDTO::from)
+                .toList();
+
+        return new PageImpl<>(filtered, pageable, filtered.size());
+    }
+
+    // 작성자 기준 필터링
+    private boolean filterByOwnerType(Record record, User user, String ownerType) {
+        if ("mine".equalsIgnoreCase(ownerType)) {
+            return record.getUser().getId().equals(user.getId());
+        } else if ("others".equalsIgnoreCase(ownerType)) {
+            return !record.getUser().getId().equals(user.getId());
+        }
+        return true;
     }
 }
 

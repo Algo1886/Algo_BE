@@ -35,8 +35,15 @@ public class ProblemFetcher {
     public String fetchProgrammersTitle(String url) {
         try {
             Document doc = Jsoup.connect(url).get();
-            // <title>완주하지 못한 선수 | 프로그래머스 스쿨</title>
-            return doc.title().replace(" | 프로그래머스 스쿨", "").trim();
+            String rawTitle = doc.title()
+                    .replace(" | 프로그래머스 스쿨", "")
+                    .trim();
+            String title = rawTitle;
+
+            title = title.replaceFirst("^코딩테스트 연습 - ", "");
+            title = title.replaceAll("\\[PCCP 모의고사 \\d+\\]\\s*", "");
+            title = title.replaceFirst("^PCCP 모의고사 \\d+회 - \\d+번 / ", "");
+            return title.trim();
         } catch (Exception e) {
             log.warn("Failed to fetch Programmers title for url={}", url, e);
             return null;

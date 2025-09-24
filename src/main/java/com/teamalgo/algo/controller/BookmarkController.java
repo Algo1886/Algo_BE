@@ -59,19 +59,15 @@ public class BookmarkController {
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam(required = false) String category
+            @RequestParam(required = false) String category,
+            @RequestParam(defaultValue = "all") String ownerType // mine, others, all
     ) {
         User user = userDetails.getUser();
 
         int pageIndex = (page > 0) ? page - 1 : 0;
         Pageable pageable = PageRequest.of(pageIndex, size);
 
-        Page<RecordDTO> bookmarks;
-        if (category == null || category.isBlank()) {
-            bookmarks = bookmarkService.getBookmarkedRecords(user, pageable);
-        } else {
-            bookmarks = bookmarkService.getBookmarkedRecords(user, pageable, category);
-        }
+        var bookmarks = bookmarkService.getBookmarkedRecords(user, pageable, category, ownerType);
 
         BookmarkListResponse response = BookmarkListResponse.fromPage(bookmarks);
         return ApiResponse.success(SuccessCode._OK, response);
