@@ -18,6 +18,7 @@ public interface RecordCategoryRepository extends JpaRepository<RecordCategory, 
     JOIN rc.record r
     JOIN rc.category c
     WHERE r.user = :user
+        AND r.isDraft = false
     GROUP BY c.name
     ORDER BY solvedCount DESC, lastSolvedDate DESC
 """)
@@ -27,6 +28,7 @@ public interface RecordCategoryRepository extends JpaRepository<RecordCategory, 
             "FROM RecordCategory rc " +
             "JOIN rc.category c " +
             "WHERE rc.record.user.id = :userId " +
+            "AND rc.record.isDraft = false " +
             "GROUP BY c.slug, c.name")
     List<CategoryStatsResponse> findCategoryCountsByUserId(@Param("userId") Long userId);
 
