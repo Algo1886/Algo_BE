@@ -42,10 +42,9 @@ public class RecordController {
             RecordSearchRequest request,
             @AuthenticationPrincipal org.springframework.security.core.userdetails.UserDetails userDetails
     ) {
-        boolean isAuthenticated = (userDetails != null);
 
         Page<com.teamalgo.algo.domain.record.Record> records =
-                recordService.searchRecords(request, isAuthenticated);
+                recordService.searchRecords(request);
 
         RecordListResponse response = recordService.createRecordListResponse(records);
         return ApiResponse.success(SuccessCode._OK, response);

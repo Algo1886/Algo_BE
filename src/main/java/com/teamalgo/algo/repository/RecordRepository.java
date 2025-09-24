@@ -30,7 +30,12 @@ public interface RecordRepository extends JpaRepository<Record, Long>, JpaSpecif
     LEFT JOIN rc.category c
     LEFT JOIN r.user u
     WHERE r.isDraft = false AND r.isPublished = true
-      AND (:search IS NULL OR r.customTitle LIKE %:search% OR p.title LIKE %:search%)
+      AND (:search IS NULL OR
+           CASE
+               WHEN r.customTitle IS NOT NULL AND r.customTitle <> ''
+               THEN r.customTitle
+               ELSE p.title
+             END LIKE :search)
       AND (:url IS NULL OR p.url = :url)
       AND (:author IS NULL OR u.username = :author)
       AND (:category IS NULL OR c.name = :category)
