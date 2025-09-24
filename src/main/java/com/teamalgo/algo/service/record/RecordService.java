@@ -305,8 +305,12 @@ public class RecordService {
     }
 
     //  내 레코드 목록
-    public Page<com.teamalgo.algo.domain.record.Record> getRecordsByUser(User user, Pageable pageable) {
-        return recordRepository.findByUserIdAndIsDraftFalse(user.getId(), pageable);
+    public Page<com.teamalgo.algo.domain.record.Record>  getUserRecords(Long userId, Pageable pageable) {
+        return recordRepository.findByUserIdAndIsDraftFalse(userId, pageable);
+    }
+
+    public Page<com.teamalgo.algo.domain.record.Record> getUserRecords(Long userId, Pageable pageable, String category) {
+        return recordRepository.findByUserIdAndIsDraftFalseAndCategoryName(userId, category, pageable);
     }
 
     // Draft 목록
@@ -464,7 +468,7 @@ public class RecordService {
         // Categories
         if (req.getCategories() != null) {
             record.getRecordCategories().clear();
-            recordRepository.flush();
+
             for (String catName : req.getCategories()) {
                 Category category = categoryRepository.findByName(catName)
                         .orElseGet(() -> categoryRepository.save(

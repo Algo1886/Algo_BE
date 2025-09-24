@@ -47,4 +47,18 @@ public interface RecordRepository extends JpaRepository<Record, Long>, JpaSpecif
             @Param("endDate") LocalDateTime endDate,
             Pageable pageable
     );
+
+    @Query("""
+        SELECT r FROM Record r
+        JOIN r.recordCategories rc
+        JOIN rc.category c
+        WHERE r.user.id = :userId
+        AND r.isDraft = false
+        AND c.name = :categoryName
+    """)
+    Page<Record> findByUserIdAndIsDraftFalseAndCategoryName(
+            @Param("userId") Long userId,
+            @Param("categoryName") String categoryName,
+            Pageable pageable
+    );
 }
