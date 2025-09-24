@@ -1,8 +1,10 @@
 package com.teamalgo.algo.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.teamalgo.algo.domain.record.RecordCoreIdea;
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
@@ -17,6 +19,8 @@ public class CoreIdeaDTO {
     private Long recordId;
     private String problemTitle;
     private List<String> categories;
+    @JsonFormat(pattern = "yyyy.MM.dd", timezone = "Asia/Seoul")
+    private LocalDateTime createdAt;
 
     public static CoreIdeaDTO fromEntity(RecordCoreIdea entity) {
         return CoreIdeaDTO.builder()
@@ -29,6 +33,8 @@ public class CoreIdeaDTO {
                                 .map(rc -> rc.getCategory().getName())
                                 .toList()
                 )
+                .createdAt(entity.getRecord().getCreatedAt())
                 .build();
     }
+
 }
