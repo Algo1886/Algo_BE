@@ -18,7 +18,7 @@ public class ImageController {
     private final ImageService imageService;
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<ApiResponse<ImageUrlResponse>> upload(@RequestPart("file") MultipartFile file) {
+    public ResponseEntity<ApiResponse<ImageUrlResponse>> upload(@RequestPart("image") MultipartFile file) {
         String url = imageService.uploadImage(file);
         ImageUrlResponse response = new ImageUrlResponse(url);
         return ApiResponse.success(SuccessCode._OK, response);
