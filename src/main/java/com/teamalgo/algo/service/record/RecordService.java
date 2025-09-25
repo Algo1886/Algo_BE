@@ -65,7 +65,7 @@ public class RecordService {
             if (req.getDetail() == null || req.getDetail().isBlank()) {
                 throw new CustomException(ErrorCode.INVALID_DETAIL);
             }
-            if (req.getCategories() == null || req.getCategories().isEmpty()) {
+            if (req.getCategoryIds() == null || req.getCategoryIds().isEmpty()) {
                 throw new CustomException(ErrorCode.INVALID_CATEGORIES);
             }
             if (req.getStatus() == null ||
@@ -168,24 +168,8 @@ public class RecordService {
         }
 
         // Categories
-        if (req.getCategories() != null) {
-            List<RecordCategory> recordCategories = new HashSet<>(req.getCategories()).stream()
-                    .map(catName -> {
-                        Category category = categoryRepository.findByName(catName)
-                                .orElseGet(() -> categoryRepository.save(
-                                        Category.builder()
-                                                .name(catName)
-                                                .slug(catName.toLowerCase().replace(" ", "-"))
-                                                .build()
-                                ));
-                        return RecordCategory.builder()
-                                .record(record)
-                                .category(category)
-                                .build();
-                    })
-                    .toList();
-
-            record.getRecordCategories().addAll(recordCategories);
+        if (req.getCategoryIds() != null) {
+            setCategoriesForRecord(record, req.getCategoryIds());
         }
 
         boolean isSuccess = "success".equals(record.getStatus());
@@ -332,7 +316,7 @@ public class RecordService {
             if (req.getDetail() == null || req.getDetail().isBlank()) {
                 throw new CustomException(ErrorCode.INVALID_DETAIL);
             }
-            if (req.getCategories() == null || req.getCategories().isEmpty()) {
+            if (req.getCategoryIds() == null || req.getCategoryIds().isEmpty()) {
                 throw new CustomException(ErrorCode.INVALID_CATEGORIES);
             }
             if (req.getStatus() == null ||
@@ -464,24 +448,9 @@ public class RecordService {
         }
 
         // Categories
-        if (req.getCategories() != null) {
+        if (req.getCategoryIds() != null) {
             record.getRecordCategories().clear();
-
-            for (String catName : req.getCategories()) {
-                Category category = categoryRepository.findByName(catName)
-                        .orElseGet(() -> categoryRepository.save(
-                                Category.builder()
-                                        .name(catName)
-                                        .slug(catName.toLowerCase().replace(" ", "-"))
-                                        .build()
-                        ));
-                record.getRecordCategories().add(
-                        com.teamalgo.algo.domain.category.RecordCategory.builder()
-                                .record(record)
-                                .category(category)
-                                .build()
-                );
-            }
+            setCategoriesForRecord(record, req.getCategoryIds());
         }
 
         // 임시저장 -> 발행으로 전환된 경우 통계 반영
@@ -583,4 +552,20 @@ public class RecordService {
                 .map(rc -> rc.getCategory().getName())
                 .toList();
     }
+
+    private void setCategoriesForRecord(com.teamalgo.algo.domain.record.Record record, List<Long> categoryIds) {
+        List<Category> categories = categoryRepository.findAllById(categoryIds);
+        if(categories.size() != categoryIds.size()) {
+            throw new CustomException(ErrorCode.INVALID_CATEGORIES);
+        }
+
+        categories.forEach(category -> {
+            RecordCategory rc = RecordCategory.builder()
+                    .record(record)
+                    .category(category)
+                    .build();
+            record.getRecordCategories().add(rc);
+        });
+    }
+
 }
