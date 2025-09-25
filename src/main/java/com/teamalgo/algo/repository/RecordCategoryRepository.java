@@ -24,12 +24,12 @@ public interface RecordCategoryRepository extends JpaRepository<RecordCategory, 
 """)
     List<Object[]> findMostSolvedByUser(@Param("user") User user, Pageable pageable);
 
-    @Query("SELECT new com.teamalgo.algo.dto.response.CategoryStatsResponse(c.slug, c.name, COUNT(rc)) " +
+    @Query("SELECT new com.teamalgo.algo.dto.response.CategoryStatsResponse(c.name, COUNT(rc)) " +
             "FROM RecordCategory rc " +
             "JOIN rc.category c " +
             "WHERE rc.record.user.id = :userId " +
             "AND rc.record.isDraft = false " +
-            "GROUP BY c.slug, c.name")
+            "GROUP BY c.name")
     List<CategoryStatsResponse> findCategoryCountsByUserId(@Param("userId") Long userId);
 
 }

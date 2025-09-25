@@ -22,7 +22,6 @@ public class CategoryStatsService {
 
         return results.stream()
                 .map(r -> new CategoryStatsResponse(
-                        r.getSlug(),
                         r.getName(),
                         r.getCount(),
                         Math.round(((double) r.getCount() / total) * 1000) / 10.0
