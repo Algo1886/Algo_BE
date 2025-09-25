@@ -66,4 +66,18 @@ public interface RecordRepository extends JpaRepository<Record, Long>, JpaSpecif
             @Param("categoryName") String categoryName,
             Pageable pageable
     );
+
+    @Query("""
+        SELECT r
+        FROM Record r
+        WHERE r.user.id = :userId
+          AND r.isDraft = false
+          AND NOT EXISTS (
+              SELECT 1 FROM ReviewLog rl
+              WHERE rl.user.id = :userId
+                AND rl.record.id = r.id
+          )
+    """)
+    List<Record> findUnreviewedRecords(@Param("userId") Long userId);
+
 }
