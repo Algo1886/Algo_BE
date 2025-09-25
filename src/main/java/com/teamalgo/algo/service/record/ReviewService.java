@@ -45,11 +45,9 @@ public class ReviewService {
 
     // 추천 복습 문제 조회
     public List<RecordDTO> getRecommendedReviews(Long userId) {
-        List<Record> records = recordRepository.findByUserId(userId);
+        List<Record> records = recordRepository.findUnreviewedRecords(userId);
 
         return records.stream()
-                // 이미 복습한 건 제외
-                .filter(record -> !reviewLogRepository.existsByUserIdAndRecordId(userId, record.getId()))
                 .map(record -> {
                     int difficulty = record.getDifficulty() != null ? record.getDifficulty() : 1;
                     int complexity = calculateComplexityScore(record);
