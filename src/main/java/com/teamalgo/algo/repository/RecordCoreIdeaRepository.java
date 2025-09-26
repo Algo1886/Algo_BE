@@ -18,8 +18,8 @@ public interface RecordCoreIdeaRepository extends JpaRepository<RecordCoreIdea, 
 
 
     // 특정 카테고리 + draft 제외
-    Page<RecordCoreIdea> findByRecordUserIdAndRecordIsDraftFalseAndRecord_RecordCategories_Category_NameAndContentIsNotNullAndContentNot(
-            Long userId, String category, String empty, Pageable pageable);
+    Page<RecordCoreIdea> findByRecordUserIdAndRecordIsDraftFalseAndRecord_RecordCategories_Category_IdAndContentIsNotNullAndContentNot(
+            Long userId, Long categoryId, String empty, Pageable pageable);
 
 
     // 최신순 + draft 제외

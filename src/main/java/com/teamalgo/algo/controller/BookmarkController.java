@@ -59,15 +59,14 @@ public class BookmarkController {
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam(required = false) String category,
+            @RequestParam(required = false) Long categoryId,
             @RequestParam(defaultValue = "all") String ownerType // mine, others, all
     ) {
         User user = userDetails.getUser();
-
         int pageIndex = (page > 0) ? page - 1 : 0;
         Pageable pageable = PageRequest.of(pageIndex, size);
 
-        var bookmarks = bookmarkService.getBookmarkedRecords(user, pageable, category, ownerType);
+        var bookmarks = bookmarkService.getBookmarkedRecords(user, pageable, categoryId, ownerType);
 
         BookmarkListResponse response = BookmarkListResponse.fromPage(bookmarks);
         return ApiResponse.success(SuccessCode._OK, response);

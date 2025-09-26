@@ -25,14 +25,14 @@ public class CoreIdeaService {
     }
 
     // 핵심 아이디어 목록 조회 (카테고리 선택 O)
-    public Page<CoreIdeaDTO> getUserIdeas(Long userId, Pageable pageable, String category) {
-        if (category == null || category.isBlank()) {
+    public Page<CoreIdeaDTO> getUserIdeas(Long userId, Pageable pageable, Long categoryId) {
+        if (categoryId == null) {
             return getUserIdeas(userId, pageable);
         }
 
         return recordCoreIdeaRepository
-                .findByRecordUserIdAndRecordIsDraftFalseAndRecord_RecordCategories_Category_NameAndContentIsNotNullAndContentNot(
-                        userId, category, "", pageable
+                .findByRecordUserIdAndRecordIsDraftFalseAndRecord_RecordCategories_Category_IdAndContentIsNotNullAndContentNot(
+                        userId, categoryId, "", pageable
                 )
                 .map(CoreIdeaDTO::fromEntity);
     }

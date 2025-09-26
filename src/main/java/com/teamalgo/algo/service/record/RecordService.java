@@ -291,8 +291,8 @@ public class RecordService {
         return recordRepository.findByUserIdAndIsDraftFalse(userId, pageable);
     }
 
-    public Page<com.teamalgo.algo.domain.record.Record> getUserRecords(Long userId, Pageable pageable, String category) {
-        return recordRepository.findByUserIdAndIsDraftFalseAndCategoryName(userId, category, pageable);
+    public Page<com.teamalgo.algo.domain.record.Record> getUserRecords(Long userId, Pageable pageable, Long categoryId) {
+        return recordRepository.findByUserIdAndIsDraftFalseAndCategoryId(userId, categoryId, pageable);
     }
 
     // Draft 목록
