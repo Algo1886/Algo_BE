@@ -59,11 +59,11 @@ public interface RecordRepository extends JpaRepository<Record, Long>, JpaSpecif
         JOIN rc.category c
         WHERE r.user.id = :userId
         AND r.isDraft = false
-        AND c.name = :categoryName
+        AND c.id = :categoryId
     """)
-    Page<Record> findByUserIdAndIsDraftFalseAndCategoryName(
+    Page<Record> findByUserIdAndIsDraftFalseAndCategoryId(
             @Param("userId") Long userId,
-            @Param("categoryName") String categoryName,
+            @Param("categoryId") Long categoryId,
             Pageable pageable
     );
 

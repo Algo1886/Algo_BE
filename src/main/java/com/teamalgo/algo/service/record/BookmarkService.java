@@ -56,15 +56,15 @@ public class BookmarkService {
     }
 
     // 북마크한 레코드 목록 조회 (category, 작성자 필터링)
-    public Page<RecordDTO> getBookmarkedRecords(User user, Pageable pageable, String category, String ownerType) {
+    public Page<RecordDTO> getBookmarkedRecords(User user, Pageable pageable,  Long categoryId, String ownerType) {
         Page<Record> records;
 
-        if (category == null || category.isBlank()) {
+        if (categoryId == null) {
             records = bookmarkRepository.findByUserAndRecordIsDraftFalse(user, pageable)
                     .map(Bookmark::getRecord);
         } else {
-            records = bookmarkRepository.findByUserAndRecordIsDraftFalseAndRecord_RecordCategories_Category_Name(
-                            user, category, pageable)
+            records = bookmarkRepository.findByUserAndRecordIsDraftFalseAndRecord_RecordCategories_Category_Id(
+                            user, categoryId, pageable)
                     .map(Bookmark::getRecord);
         }
 

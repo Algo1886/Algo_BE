@@ -21,8 +21,8 @@ public interface BookmarkRepository extends JpaRepository<Bookmark, Long> {
     Optional<Bookmark> findByUserAndRecordAndRecordIsDraftFalse(User user, Record record);
 
     // 카테고리별 북마크 목록
-    Page<Bookmark> findByUserAndRecordIsDraftFalseAndRecord_RecordCategories_Category_Name(
-            User user, String category, Pageable pageable);
+    Page<Bookmark> findByUserAndRecordIsDraftFalseAndRecord_RecordCategories_Category_Id(
+            User user, Long categoryId, Pageable pageable);
 
     // 전체 북마크 목록
     Page<Bookmark> findByUserAndRecordIsDraftFalse(User user, Pageable pageable);

@@ -31,19 +31,16 @@ public class CoreIdeaController {
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam(required = false) String category
+            @RequestParam(required = false) Long categoryId
     ) {
         User user = userService.findById(userDetails.getUser().getId())
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
         int pageIndex = (page > 0) ? page - 1 : 0;
 
-        Page<CoreIdeaDTO> ideas;
-        if (category == null || category.isBlank()) {
-            ideas = coreIdeaService.getUserIdeas(user.getId(), PageRequest.of(pageIndex, size));
-        } else {
-            ideas = coreIdeaService.getUserIdeas(user.getId(), PageRequest.of(pageIndex, size), category);
-        }
+        Page<CoreIdeaDTO> ideas = (categoryId == null)
+                ? coreIdeaService.getUserIdeas(user.getId(), PageRequest.of(pageIndex, size))
+                : coreIdeaService.getUserIdeas(user.getId(), PageRequest.of(pageIndex, size), categoryId);
 
         CoreIdeaListResponse response = CoreIdeaListResponse.fromPage(ideas);
         return ApiResponse.success(SuccessCode._OK, response);
