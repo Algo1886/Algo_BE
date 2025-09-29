@@ -62,9 +62,6 @@ public class RecordService {
     public com.teamalgo.algo.domain.record.Record createRecord(User user, RecordCreateRequest req) {
 
         if (!req.isDraft()) {
-            if (req.getDetail() == null || req.getDetail().isBlank()) {
-                throw new CustomException(ErrorCode.INVALID_DETAIL);
-            }
             if (req.getCategoryIds() == null || req.getCategoryIds().isEmpty()) {
                 throw new CustomException(ErrorCode.INVALID_CATEGORIES);
             }
@@ -313,9 +310,6 @@ public class RecordService {
         boolean isDraft = (req.getIsDraft() != null && req.getIsDraft());
 
         if (!isDraft) {
-            if (req.getDetail() == null || req.getDetail().isBlank()) {
-                throw new CustomException(ErrorCode.INVALID_DETAIL);
-            }
             if (req.getCategoryIds() == null || req.getCategoryIds().isEmpty()) {
                 throw new CustomException(ErrorCode.INVALID_CATEGORIES);
             }
@@ -506,7 +500,7 @@ public class RecordService {
                 .categories(mapCategories(record))
                 .source(record.getProblem().getSource())
                 .status(record.getStatus())
-                .difficulty(record.getDifficulty() != null ? record.getDifficulty() : 0)
+                .difficulty(record.getDifficulty())
                 .detail(record.getDetail())
                 .codes(record.getCodes().stream().map(RecordCodeDTO::fromEntity).toList())
                 .steps(record.getSteps().stream().map(RecordStepDTO::fromEntity).toList())
