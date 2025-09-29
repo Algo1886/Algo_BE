@@ -86,4 +86,5 @@ jobs:
             --name algo-server \
             --network algo-network \
             --restart=always \
-            ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_REPONAME }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_REPONAME }} \
+            --spring.profiles.active=prod
