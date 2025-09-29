@@ -3,6 +3,7 @@ package com.teamalgo.algo.global.config;
 import com.teamalgo.algo.security.JwtAuthenticationFilter;
 import com.teamalgo.algo.security.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -22,15 +23,17 @@ public class SecurityConfig {
     private final JwtTokenProvider jwtTokenProvider;
     private final UserService userService;
 
+    @Value("${FRONT_ORIGIN_LOCAL}")
+    private String frontOriginLocal;
+
+    @Value("${FRONT_ORIGIN_SERVER}")
+    private String frontOriginServer;
+
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         return request -> {
             CorsConfiguration config = new CorsConfiguration();
-            config.setAllowedOrigins(Arrays.asList(
-                    "http://localhost:3000",
-                    "http://localhost:5173",
-                    "https://algo-fe-five.vercel.app"
-            ));
+            config.setAllowedOrigins(Arrays.asList(frontOriginLocal, frontOriginServer));
             config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
             config.setAllowedHeaders(Collections.singletonList("*"));
             config.setAllowCredentials(true);
