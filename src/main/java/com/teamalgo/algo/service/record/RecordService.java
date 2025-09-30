@@ -448,6 +448,7 @@ public class RecordService {
         if (prevDraft && !record.isDraft()) {
             boolean isSuccess = "success".equals(record.getStatus());
             statsService.increaseStats(user, isSuccess);
+            record.publish();
         }
 
         return record;

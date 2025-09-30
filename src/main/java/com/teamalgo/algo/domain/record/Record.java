@@ -11,6 +11,7 @@ import lombok.*;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -113,5 +114,8 @@ public class Record extends BaseEntity {
 
     public void updateProblem(Problem newProblem) { this.problem = newProblem;}
 
+    public void publish() {
+        this.setCreatedAt(LocalDateTime.now());
+    }
 
 }
