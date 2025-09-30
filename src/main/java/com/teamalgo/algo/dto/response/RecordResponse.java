@@ -23,7 +23,7 @@ public class RecordResponse {
 
         private String title;
         private String problemUrl;
-        private List<String> categories;
+        private List<CategoryDTO> categories;
         private String source;
 
         private String status;
