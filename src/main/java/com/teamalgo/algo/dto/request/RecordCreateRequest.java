@@ -24,7 +24,7 @@ public class RecordCreateRequest {
     @Size(max = 200, message = "Title should not exceed 200 characters")
     private String customTitle;
 
-    private List<Long> categoryIds;
+    private List<Long> categories;
     private String status;
     private Integer difficulty;
     private String detail;
