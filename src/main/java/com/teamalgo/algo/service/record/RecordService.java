@@ -6,12 +6,7 @@ import com.teamalgo.algo.domain.record.RecordStep;
 import com.teamalgo.algo.domain.category.RecordCategory;
 import com.teamalgo.algo.domain.user.User;
 import com.teamalgo.algo.domain.category.Category;
-import com.teamalgo.algo.dto.RecordCodeDTO;
-import com.teamalgo.algo.dto.RecordCoreIdeaDTO;
-import com.teamalgo.algo.dto.RecordDTO;
-import com.teamalgo.algo.dto.RecordLinkDTO;
-import com.teamalgo.algo.dto.RecordStepDTO;
-import com.teamalgo.algo.dto.AuthorDTO;
+import com.teamalgo.algo.dto.*;
 import com.teamalgo.algo.dto.request.RecordCreateRequest;
 import com.teamalgo.algo.dto.request.RecordSearchRequest;
 import com.teamalgo.algo.dto.request.RecordUpdateRequest;
@@ -543,9 +538,9 @@ public class RecordService {
                 .build();
     }
 
-    private List<String> mapCategories(com.teamalgo.algo.domain.record.Record record) {
+    private List<CategoryDTO> mapCategories(com.teamalgo.algo.domain.record.Record record) {
         return record.getRecordCategories().stream()
-                .map(rc -> rc.getCategory().getName())
+                .map(rc -> new CategoryDTO(rc.getCategory().getId(), rc.getCategory().getName()))
                 .toList();
     }
 
