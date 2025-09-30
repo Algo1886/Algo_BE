@@ -72,7 +72,9 @@ public class UserService {
             user.update(null, request.getAvatarUrl()); // 닉네임 변경 없음
         }
 
-        return UserResponse.from(user);
+        int streak = statsService.getValidCurrentStreak(user);
+
+        return UserResponse.from(user, streak);
     }
 
     public void deleteUser(Long userId) {
