@@ -40,7 +40,7 @@ public class RecordUpdateRequest {
     private List<RecordLinkDTO> links;
 
     @Schema(description = "카테고리 목록", example = "[\"DP\", \"Graph\"]")
-    private List<Long> categoryIds;
+    private List<Long> categories;
 
     private String status;
     private Integer difficulty;
