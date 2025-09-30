@@ -444,6 +444,7 @@ public class RecordService {
         // Categories
         if (req.getCategoryIds() != null) {
             record.getRecordCategories().clear();
+            recordRepository.flush();
             setCategoriesForRecord(record, req.getCategoryIds());
         }
 
