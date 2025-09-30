@@ -54,12 +54,15 @@ public class RecordService {
     private final StatsService statsService;
     private final ProblemService problemService;
 
+    @PersistenceContext
+    private EntityManager entityManager;
+
     // 레코드 생성
     @Transactional
     public com.teamalgo.algo.domain.record.Record createRecord(User user, RecordCreateRequest req) {
 
         if (!req.isDraft()) {
-            if (req.getCategories() == null || req.getCategories().isEmpty()) {
+            if (req.getCategoryIds() == null || req.getCategoryIds().isEmpty()) {
                 throw new CustomException(ErrorCode.INVALID_CATEGORIES);
             }
             if (req.getStatus() == null ||
@@ -162,8 +165,8 @@ public class RecordService {
         }
 
         // Categories
-        if (req.getCategories() != null) {
-            setCategoriesForRecord(record, req.getCategories());
+        if (req.getCategoryIds() != null) {
+            setCategoriesForRecord(record, req.getCategoryIds());
         }
 
         boolean isSuccess = "success".equals(record.getStatus());
@@ -307,7 +310,7 @@ public class RecordService {
         boolean isDraft = (req.getIsDraft() != null && req.getIsDraft());
 
         if (!isDraft) {
-            if (req.getCategories() == null || req.getCategories().isEmpty()) {
+            if (req.getCategoryIds() == null || req.getCategoryIds().isEmpty()) {
                 throw new CustomException(ErrorCode.INVALID_CATEGORIES);
             }
             if (req.getStatus() == null ||
@@ -439,9 +442,9 @@ public class RecordService {
         }
 
         // Categories
-        if (req.getCategories() != null) {
+        if (req.getCategoryIds() != null) {
             record.getRecordCategories().clear();
-            setCategoriesForRecord(record, req.getCategories());
+            setCategoriesForRecord(record, req.getCategoryIds());
         }
 
         // 임시저장 -> 발행으로 전환된 경우 통계 반영
