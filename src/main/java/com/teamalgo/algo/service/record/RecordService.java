@@ -280,16 +280,22 @@ public class RecordService {
 
     //  내 레코드 목록
     public Page<com.teamalgo.algo.domain.record.Record>  getUserRecords(Long userId, Pageable pageable) {
-        return recordRepository.findByUserIdAndIsDraftFalse(userId, pageable);
+        Pageable sorted = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(),
+                Sort.by(Sort.Direction.DESC, "createdAt"));
+        return recordRepository.findByUserIdAndIsDraftFalse(userId, sorted);
     }
 
     public Page<com.teamalgo.algo.domain.record.Record> getUserRecords(Long userId, Pageable pageable, Long categoryId) {
-        return recordRepository.findByUserIdAndIsDraftFalseAndCategoryId(userId, categoryId, pageable);
+        Pageable sorted = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(),
+                Sort.by(Sort.Direction.DESC, "createdAt"));
+        return recordRepository.findByUserIdAndIsDraftFalseAndCategoryId(userId, categoryId, sorted);
     }
 
     // Draft 목록
     public Page<com.teamalgo.algo.domain.record.Record> getDraftsByUser(User user, Pageable pageable) {
-        return recordRepository.findByUserIdAndIsDraftTrue(user.getId(), pageable);
+        Pageable sorted = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(),
+                Sort.by(Sort.Direction.DESC, "createdAt"));
+        return recordRepository.findByUserIdAndIsDraftTrue(user.getId(), sorted);
     }
 
     // 레코드 수정

@@ -9,11 +9,9 @@ import com.teamalgo.algo.repository.BookmarkRepository;
 import com.teamalgo.algo.repository.RecordRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
@@ -57,19 +55,22 @@ public class BookmarkService {
 
     // 북마크한 레코드 목록 조회 (category, 작성자 필터링)
     public Page<RecordDTO> getBookmarkedRecords(User user, Pageable pageable,  Long categoryId, String ownerType) {
+        Pageable sorted = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(),
+                Sort.by(Sort.Direction.DESC, "createdAt"));
+
         Page<Record> records;
 
         if (categoryId == null) {
-            records = bookmarkRepository.findByUserAndRecordIsDraftFalse(user, pageable)
+            records = bookmarkRepository.findByUserAndRecordIsDraftFalse(user, sorted)
                     .map(Bookmark::getRecord);
         } else {
             records = bookmarkRepository.findByUserAndRecordIsDraftFalseAndRecord_RecordCategories_Category_Id(
-                            user, categoryId, pageable)
+                            user, categoryId, sorted)
                     .map(Bookmark::getRecord);
         }
 
         if (records.isEmpty()) {
-            return new PageImpl<>(List.of(), pageable, 0);
+            return new PageImpl<>(List.of(), sorted, 0);
         }
 
         List<RecordDTO> filtered = records.stream()
@@ -77,7 +78,7 @@ public class BookmarkService {
                 .map(RecordDTO::from)
                 .toList();
 
-        return new PageImpl<>(filtered, pageable, filtered.size());
+        return new PageImpl<>(filtered, sorted, filtered.size());
     }
 
     // 작성자 기준 필터링

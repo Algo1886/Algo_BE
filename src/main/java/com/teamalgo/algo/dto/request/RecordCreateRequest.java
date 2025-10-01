@@ -29,7 +29,9 @@ public class RecordCreateRequest {
     private Integer difficulty;
     private String detail;
 
+    @Size(max = 3, message = "코드는 최대 3개까지만 등록 가능합니다.")
     private List<@Valid RecordCodeDTO> codes;
+    @Size(max = 10, message = "풀이 과정은 최대 10개까지만 등록 가능합니다.")
     private List<@Valid RecordStepDTO> steps;
 
     private List<RecordCoreIdeaDTO> ideas;
