@@ -4,6 +4,7 @@ import com.teamalgo.algo.dto.CoreIdeaDTO;
 import com.teamalgo.algo.repository.RecordCoreIdeaRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.domain.Page;
@@ -19,20 +20,31 @@ public class CoreIdeaService {
 
     // 핵심 아이디어 목록 조회 (카테고리 선택 X)
     public Page<CoreIdeaDTO> getUserIdeas(Long userId, Pageable pageable) {
+        Pageable sorted = PageRequest.of(
+                pageable.getPageNumber(),
+                pageable.getPageSize(),
+                Sort.by(Sort.Direction.DESC, "record.createdAt") // 최신순
+        );
         return recordCoreIdeaRepository
-                .findByRecordUserIdAndRecordIsDraftFalseAndContentIsNotNullAndContentNot(userId, "", pageable)
+                .findByRecordUserIdAndRecordIsDraftFalseAndContentIsNotNullAndContentNot(userId, "", sorted)
                 .map(CoreIdeaDTO::fromEntity);
     }
 
     // 핵심 아이디어 목록 조회 (카테고리 선택 O)
     public Page<CoreIdeaDTO> getUserIdeas(Long userId, Pageable pageable, Long categoryId) {
+        Pageable sorted = PageRequest.of(
+                pageable.getPageNumber(),
+                pageable.getPageSize(),
+                Sort.by(Sort.Direction.DESC, "record.createdAt") // 최신순
+        );
+
         if (categoryId == null) {
-            return getUserIdeas(userId, pageable);
+            return getUserIdeas(userId, sorted);
         }
 
         return recordCoreIdeaRepository
                 .findByRecordUserIdAndRecordIsDraftFalseAndRecord_RecordCategories_Category_IdAndContentIsNotNullAndContentNot(
-                        userId, categoryId, "", pageable
+                        userId, categoryId, "",sorted
                 )
                 .map(CoreIdeaDTO::fromEntity);
     }
